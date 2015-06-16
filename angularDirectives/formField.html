@@ -1,0 +1,104 @@
+<div ng-switch="field.widget" class="form-group" style="clear:both">
+   <span ng-switch-when="radio">
+      <b>{{ field.label }}</b><br/>
+      <div ng-if="!readonly" ng-repeat="(value, data) in field.values" class="radio">
+        <label>
+          <input type="radio" ng-model="$parent.model[$parent.fieldname]" value="{{value}}">
+          <span ng-bind-html="data.label"></span>
+        </label>
+      </div>
+      <span ng-if="readonly"> : <span ng-bind-html="field.values[model[fieldname]].label"></span></span>
+   </span>
+   <span ng-switch-default>
+      <span ng-switch="field.type">
+
+         <span ng-switch-default> <!-- string, key, int, float -->
+            <label class="control-label col-xs-4">{{ field.label }} :</label>
+            <div class="col-xs-8">
+              <input type="text" ng-model="model[fieldname]" class="form-control">
+            </div>
+         </span>
+
+         <span ng-switch-when="text">
+            <label class="control-label col-xs-4">{{ field.label }} :</label>
+            <div class="col-xs-8">
+              <textarea class="form-control" rows="5" ng-model="model[fieldname]"></textarea>
+            </div>
+         </span>
+
+         <span ng-switch-when="boolean">
+            <label class="checkbox col-xs-8 col-xs-offset-4">
+              <input type="checkbox" ng-model="model[fieldname]"> {{field.label }}
+            </label>
+         </span>
+
+         <span ng-switch-when="point">
+            <label class="control-label col-xs-4">{{ field.label }} :</label>
+            <div class="col-xs-3">
+              <input type="text" ng-model="model[fieldname].x" class="form-control">
+            </div>
+            <div class="col-xs-3">
+              <input type="text" ng-model="model[fieldname].y" class="form-control">
+            </div>
+            <div class="col-xs-2">
+              <button type="button" class="btn btn-default btn-block" ng-click="map.display = !map.display">Carte
+              </button>
+            </div>
+           <div ng-if="map.display">
+             <div class="col-xs-8 col-xs-offset-4">
+               <a href="" ng-click="map.geocoder()">Déduire les coordonnées de l'adresse</a>
+             </div>
+             <google-map center="map.center" zoom="map.zoom" draggable="true" events="map.events">
+               <marker coords="[model[fieldname].y, model[fieldname].x]" ng-if="model[fieldname].x"></marker>
+             </google-map>
+           </div>
+         </span>
+
+         <span ng-switch-when="jsdatetime">
+            <label class="control-label col-xs-4">{{ field.label }} : </label>
+            <div class="col-xs-3">
+              <input type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="model[fieldname]"/>
+              <!--style="width:120px;position:relative"-->
+            </div>
+            <div class="col-xs-3">
+              <timepicker ng-model="model[fieldname]"></timepicker>
+            </div>
+            <div class="col-xs-2">
+              <button class="btn btn-danger" ng-click="clear()">Jamais</button>
+            </div>
+         </span>
+
+         <span ng-switch-when="jstime">
+            <label class="control-label col-xs-4">{{ field.label }} :</label>
+            <div class="col-xs-8">
+              <timepicker ng-model="model[fieldname]"></timepicker>
+            </div>
+         </span>
+
+         <span ng-switch-when="jsdate">
+            <label class="control-label col-xs-4">{{ field.label }}</label>
+            <div class="col-xs-5">
+              <input type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="model[fieldname]"/>
+              <!--style="width:120px;position:relative"-->
+            </div>
+            <div class="col-xs-3">
+              <button class="btn btn-danger" ng-click="clear()">Jamais</button>
+            </div>
+         </span>
+
+         <span ng-switch-when="enum">
+            <label class="control-label col-xs-4">{{ field.label }} :</label>
+            <div class="col-xs-8">
+              <select ng-if="!readonly" ui-select2="select2Options" ng-model="model[fieldname]" class="form-control"
+                      placeholder="Pays">
+                <option ng-if="field.nullInvalid !== true" ng-value="undefined">Aucun</option>
+                <option ng-value="key" ng-repeat="(key, value) in field.values" ng-selected="model[fieldname] == key" ng-if="!value.asAdmin || user.admin">{{value.label}}</option>
+              </select>
+              <!--<select ng-if="!readonly" ng-model="model[fieldname]" class="form-control"-->
+                      <!--ng-options="key as value.label for (key, value) in field.values"/>-->
+              <span ng-if="readonly" ng-bind-html="field.values[model[fieldname]].label"></span>
+            </div>
+         </span>
+      </span>
+   </span>
+</div>

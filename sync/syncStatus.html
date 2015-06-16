@@ -1,0 +1,41 @@
+<span ng-controller="SyncCtrl">
+   <div style="background-color:{{syncStatus().color}};display:inline-block;min-width:14px;text-align:center" ng-click="show()">{{ syncStatus().strStatus }}</div>
+   <div ng-if="showDetails" style="position:fixed;top:0px;left:0px;width:100%;height:100%;margin-top:40px;z-index:500">
+      <div class="blanket">
+      </div>
+      <div style="z-index:600;position:absolute;top:10px;left:10px;width:100%;">
+         <table>
+            <tr><td>Total nb synchros : </td><td>{{ syncQueue.nbSyncs }}</td></tr>
+            <tr><td>Du 1er coup : </td><td>{{ syncQueue.nbSyncsWithoutErrors }}</td></tr>
+            <tr><td>Tentatives échouées : </td><td>{{ syncQueue.nbFailuresTotal +  syncQueue.nbFailures }}</td></tr>
+            <tr><td>Par type : </td><td>{{ syncQueue.nbFailuresByType[0] }}, {{ syncQueue.nbFailuresByType[1] }}, {{ syncQueue.nbFailuresByType[2] }}, {{ syncQueue.nbFailuresByType[3] }}</td></tr>
+            <tr><td>Exceptions : </td><td>{{ syncQueue.nbExceptions }}</td></tr>
+            <tr><td>Abandons : </td><td>{{ syncQueue.nbSyncAborted }}</td></tr>
+            <tr><td>Tentatives en cours : </td><td>{{ syncQueue.nbFailures }}</td></tr>
+            <tr><td><button ng-click="show()" style="padding:2px">Date actuelle</button> : </td><td>{{ now() | date: 'HH:mm:ss' }}</td></tr>
+            <tr>
+               <td>Dernière tentative : </td>
+               <td>{{ syncQueue.dateLastSyncAttempt | date: 'HH:mm:ss'}} (il y a {{ toFixed((now() - syncQueue.dateLastSyncAttempt) / 1000, 0) }}s)</td>
+            </tr>
+            <tr>
+               <td>Dernière réussie : </td>
+               <td>{{ syncQueue.dateLastSync | date: 'HH:mm:ss' }} (il y a {{ toFixed((now() - syncQueue.dateLastSync) / 1000, 0) }}s)</td>
+            </tr>
+            <tr>
+               <td>Durée dernière synchro : </td>
+               <td><span ng-if="syncQueue.dateLastSync > syncQueue.dateLastSyncAttempt">{{ syncQueue.dateLastSync - syncQueue.dateLastSyncAttempt }} ms</span></td>
+            </tr>
+            <tr>
+               <td>Dont exécution serveur : </td>
+               <td><span >{{ toFixed(syncQueue.lastExecTime, 0) }} ms</span></td>
+            </tr>
+            <tr><td>Montre détectée : </td><td>{{ syncQueue.watchWasOnline }}</td></tr>
+            <tr><td>Montre connectée : </td><td>{{ syncQueue.watchWasIsline }}</td></tr>
+            <tr><td><button ng-click="ping()" style="padding:2px">Ping</button> : </td><td>{{ lastPingEnd - lastPingStart }}ms {{ pingStatus }}</td></tr>
+            <tr><td><button ng-click="testSound()" style="padding:2px">Test son</button> : </td><td>{{ nbSoundTests }} fois</td></tr>
+            <tr><td><button ng-click="testSoundDelayed()" style="padding:2px">Test son délai</button> : </td><td></td></tr>
+         </table>
+         <center><button ng-click="ok()">Ok</button></center>
+      </div>
+   </div>
+</span>
