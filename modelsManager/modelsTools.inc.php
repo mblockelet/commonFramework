@@ -19,6 +19,10 @@ function getFieldTable($viewModel, $fieldAlias) {
 }
 
 function getPrimaryKey($viewModel) {
+   if (!$viewModel || !is_array($viewModel)) {
+      error_log('no ViewModel provided');
+      return;
+   }
    if (isset($viewModel["primaryKey"])) {
       return $viewModel["primaryKey"];
    }

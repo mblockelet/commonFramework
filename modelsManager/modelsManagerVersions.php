@@ -190,6 +190,10 @@ function getChangesCountSince($db, $request, $minVersion, $maxVersion) {
 }
 
 function getChangesSince($db, $request, $minVersion, $maxVersion, $requestName, $markRequest = false, $maxVersionIsDefault = false) {
+   if (!$request || !is_array($request)) {
+      error_log("no request provided");
+      return;
+   }
    $ID = getPrimaryKey($request["model"]);
    $changedRecords = array(
       "inserted" => array(),

@@ -1,8 +1,8 @@
 <?php
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
-if (file_exists( __DIR__."/../shared/listeners.php")) {
-   include_once __DIR__."/../shared/listeners.php"; // not required
+if (file_exists( __DIR__."/../../shared/listeners.php")) {
+   include_once __DIR__."/../../shared/listeners.php"; // not required
 }
 require_once __DIR__."/modelsTools.inc.php";
 

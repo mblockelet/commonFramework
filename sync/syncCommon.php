@@ -3,7 +3,7 @@
 
 require_once __DIR__."/../modelsManager/modelsManager.php";
 require_once __DIR__."/../modelsManager/modelsManagerVersions.php";
-require_once __DIR__."/../shared/models.php";
+require_once __DIR__."/../../shared/models.php";
 
 function syncUpdateVersions($db, $lastServerVersion) {
    $query = "UPDATE `synchro_version` SET `iLastServerVersion` = :lastServerVersion, `iLastClientVersion` = `iVersion`";
@@ -88,6 +88,10 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
    $nbChanges = 0;
    foreach ($requests as $requestName => $request) {
       if (isset($request["getChanges"]) && !$request["getChanges"]) {
+         continue;
+      }
+      if (!$request || !is_array($request)) {
+         error_log('something is wrong with request '.print_r($request, true));
          continue;
       }
       syncDebug('getChanges', 'begin', $requestName);

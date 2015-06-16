@@ -4,16 +4,15 @@
 $startTime = microtime(true);
 
 require_once("syncCommon.php");
-require_once("../shared/connect.php");
-require_once("../shared/syncRequests.php");
-if (file_exists( __DIR__."/../shared/debug.php")) {
-   include_once __DIR__."/../shared/debug.php"; // not required
+require_once("../../shared/connect.php");
+require_once("../../shared/syncRequests.php");
+if (file_exists( __DIR__."/../../shared/debug.php")) {
+   include_once __DIR__."/../../shared/debug.php"; // not required
 } else {
-   function syncDebug($type, $b_or_e, $subtype) {}
+   function syncDebug($type, $b_or_e, $subtype='') {}
 }
 
 syncDebug('Synchro', 'begin');
-
 session_start();
 
 function clientSentIdenticalRecord($recordID, & $serverRecord, & $modelClientChanges) {
@@ -181,7 +180,7 @@ if (isset($_POST["requestSets"])) {
    }
    foreach($requestSets as $requestSet) {
       $setName = $requestSet["name"];
-      require_once __DIR__."/../syncRequests/".$setName.".php";
+      require_once __DIR__."/../../syncRequests/".$setName.".php";
       $newRequests = $setName::getSyncRequests($requestSet);
       $newRequest['requestSet'] = $setName;
       $requests = array_merge($requests, $newRequests);
