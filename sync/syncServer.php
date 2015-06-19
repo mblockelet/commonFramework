@@ -125,7 +125,7 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
       $continued = true;
       $maxVersion = max($minServerVersion + 1, floor(($minServerVersion + $maxVersion) / 2));
    }
-   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion);
+   $serverCounts = 0;//syncGetCounts($db, $requests, $minServerVersion, $maxVersion);
    if (function_exists("syncAddCustomServerChanges")) {
       syncDebug('syncAddCustomServerChanges', 'begin');
       syncAddCustomServerChanges($db, $minServerVersion, $serverChanges, $serverCounts, $params);
@@ -186,7 +186,7 @@ if (isset($_POST["requestSets"])) {
       $requests = array_merge($requests, $newRequests);
    }
 }
-$requests = array_merge($requests, getSyncRequests($params));
+$requests = array_merge($requests, getSyncRequests($params, $minServerVersion));
 
 syncWithClient($db, $clientChanges, $minServerVersion, $requests, array("user", "admin"), $params);
 

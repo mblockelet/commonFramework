@@ -735,7 +735,7 @@ var TreeView = Class.extend({
       }
       $.contextMenu({
          selector: "#" + this.name + " .dynatree-node",
-         build: function($trigger, e) {
+         build: function($trigger) {
             var node = $.ui.dynatree.getNode($trigger);
             var items;
             if ((node.data.key == "unused") || (node.data.key == "search")) {

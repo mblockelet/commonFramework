@@ -91,17 +91,20 @@ class TriggerManager {
       global $db;
       $triggers = array();
       foreach ($tablesModels as $tableName => $tableModel) {
-         $triggers[$tableName] = array_replace(array(
+         $triggers[$tableName] = array(
             "BEFORE INSERT" => array(),
             "AFTER INSERT" => array(),
             "BEFORE UPDATE" => array(),
             "AFTER UPDATE" => array(),
             "BEFORE DELETE" => array(),
             "AFTER DELETE" => array()
-         ), isset($customTriggers[$tableName]) ? $customTriggers[$tableName] : array());
+         );
       }
       TriggerManager::addRandomIDTriggers($tablesModels, $triggers);
       TriggerManager::addVersionTriggers($tablesModels, $triggers);
+      if (function_exists("addCustomTriggers")) {
+         addCustomTriggers($triggers);
+      }
       TriggerManager::createTriggers($db, $tablesModels, $triggers);
    }
 }
