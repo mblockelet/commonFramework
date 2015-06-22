@@ -48,7 +48,7 @@ function getIDsModifiedSince($request, $minVersion, $maxVersion) {
    $queries = array();
    $conditions = getConditions($request, "select", "", "history_");
    foreach ($viewModel["joins"] as $joinName => $join) {
-      if (!isset($joinsUsed[$joinName])) {
+      if (!isset($joinsUsed[$joinName]) || (isset($join['ignoreHistory']) && $join['ignoreHistory'])) {
          continue;
       }
       $sqlJoins = getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, "history_", $minVersion, $joinName);
