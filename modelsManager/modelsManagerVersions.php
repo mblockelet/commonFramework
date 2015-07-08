@@ -63,7 +63,7 @@ function getIDsModifiedSince($request, $minVersion, $maxVersion, $deleted = fals
    if ($deleted) {
       $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` >= ".$minVersion." and `history_".$viewModel["mainTable"]."`.`bDeleted` <=> 1";
    } else {
-      $conditions[] = "`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion;
+      $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersion." AND `history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion;
    }
    $queries[] = "SELECT `history_".$viewModel["mainTable"]."`.`".$ID."` FROM `"."history_".$viewModel["mainTable"]."` ".$sqlJoins." WHERE ".implode($conditions, " AND ");
    return "SELECT DISTINCT `".$ID."` FROM (".implode($queries, " UNION ").") AS `mainTable`";
