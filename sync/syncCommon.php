@@ -99,9 +99,6 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
       if (isset($request["minVersion"])) {
          $curMinVersion = $request["minVersion"];
       }
-      if ($requestName == 'threads') {
-         file_put_contents('/tmp/requestThreads3.txt', date(DATE_RFC822).' '.print_r($curMinVersion, true)."\n".$minVersion."\n");
-      }
       $markRequest = isset($request["markRequest"]) ? $request["markRequest"] : false;
       $requestChanges = getChangesSince($db, $request, $curMinVersion, $maxVersion, $requestName, $markRequest, $maxVersionIsDefault);
       $modelName = $request["modelName"];
