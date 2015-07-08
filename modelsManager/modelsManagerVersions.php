@@ -41,7 +41,7 @@ one of the table.
 A record for the request has changed since minVersion if and only if either the record in the mainTable has changed since minVersion, or
 one of the records of the joined table referenced by the current record has changed since minVersion.
 */
-function getIDsModifiedSince($request, $minVersion, $maxVersion, $deleted = false) {
+function getIDsModifiedSince($request, $minVersion, $maxVersion) {
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
    $joinsUsed = getJoinsUsed($request, "read", "select");
@@ -60,11 +60,7 @@ function getIDsModifiedSince($request, $minVersion, $maxVersion, $deleted = fals
          "WHERE ".implode($joinConditions, " AND ");
    }
    $sqlJoins = getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, "history_", $minVersion, "");
-   if ($deleted) {
-      $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` >= ".$minVersion." and `history_".$viewModel["mainTable"]."`.`bDeleted` <=> 1";
-   } else {
-      $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersion." AND `history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion;
-   }
+   $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersion." AND (`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion.")";
    $queries[] = "SELECT `history_".$viewModel["mainTable"]."`.`".$ID."` FROM `"."history_".$viewModel["mainTable"]."` ".$sqlJoins." WHERE ".implode($conditions, " AND ");
    return "SELECT DISTINCT `".$ID."` FROM (".implode($queries, " UNION ").") AS `mainTable`";
 }
@@ -109,12 +105,12 @@ function getMaxVersionAllJoins($request) {
 
 /*
    The records that are deleted from the request are the records that have been
-   modified since minVersion, have a NULL nextVersion and bDeleted set to 1.
+   modified since minVersion, but are not in the current version.
 */
 function getSelectQueryDeleted($request, $minVersion, $maxVersion, $joinsMode) {
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
-   $selectIDsModified = getIDsModifiedSince($request, $minVersion, $maxVersion, true);
+   $selectIDsModified = getIDsModifiedSince($request, $minVersion, $maxVersion);
    $sqlJoins = getSqlJoins($request, $joinsMode, "select");
    $conditions = getConditions($request, "select");
 
@@ -127,7 +123,8 @@ function getSelectQueryDeleted($request, $minVersion, $maxVersion, $joinsMode) {
    if ($joinsMode == "countOnly") {
       $selectFields = "count(*) as `nbRows`";
    }
-   $query = "SELECT ".$selectFields." FROM (".$selectIDsModified.") as `changedIDs`";
+   $query = "SELECT ".$selectFields." FROM (".$selectIDsModified.") as `changedIDs` ".
+      " LEFT JOIN (".$mainTableQuery.") AS `mainTable` ON (`changedIDs`.`".$ID."` = `mainTable`.`".$ID."`) WHERE `mainTable`.`".$ID."` IS NULL";
    return $query;
 }
 
