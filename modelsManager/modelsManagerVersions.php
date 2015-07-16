@@ -190,6 +190,7 @@ function getChangesCountSince($db, $request, $minVersion, $maxVersion) {
 }
 
 function getChangesSince($db, $request, $minVersion, $maxVersion, $requestName, $markRequest = false, $maxVersionIsDefault = false) {
+   global $config;
    if (!$request || !is_array($request)) {
       error_log("no request provided");
       return;
@@ -251,6 +252,9 @@ function getChangesSince($db, $request, $minVersion, $maxVersion, $requestName, 
       } else if ($maxVersionSelected >= $minVersion) {
          $changedRecords["updated"][$row->$ID] = array("data" => $row);
          $nbChanges++;
+      }
+      if ($nbChanges > $config->sync->maxChanges) {
+        break;
       }
    }
    //echo "<br/><br/>".json_encode($changedRecords);
