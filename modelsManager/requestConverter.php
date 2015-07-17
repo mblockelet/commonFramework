@@ -1,7 +1,7 @@
 <?php
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
-require_once("../shared/connect.php");
+require_once("../../shared/connect.php");
 require_once("../sync/syncCommon.php");
 require_once("versionedRequestsManager.php");
 require_once("modelsTools.inc.php");
