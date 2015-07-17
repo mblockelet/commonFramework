@@ -243,6 +243,9 @@ var ModelsManager = {
             }
          }
       }
+      if (oldValue != null) {
+         this.deleteIfNoLink(field.refModel, oldValue);
+      }
    },
    // we delete any reference to a record of ID linkID from the container refRecordLink, possibly at index oldIndex in this container
    // refLink is the link object that describes the relation
@@ -256,6 +259,9 @@ var ModelsManager = {
       }
       else if (refLink.type == "object_list") {
          refRecordLink[oldIndex].removeByID(linkID);
+         if (refRecordLink[oldIndex].length == 0) {
+            delete refRecordLink[oldIndex];
+         }
       }
    },
    insertLinkIntoRefRecordByIndex: function(refLink, refRecordLink, curIndex, curRecord) {
@@ -308,6 +314,10 @@ var ModelsManager = {
          console.log("trying to delete inexistant record " + modelName + "[" + ID + "]");
          return;
       }
+      var curRecord = this.curData[modelName][ID];
+      if (curRecord != null) {
+         curRecord.reallyInserted = false;
+      }
       for(var fieldName in model.fields) {
          var field = model.fields[fieldName];
          var oldValue = oldRecord[fieldName];
@@ -316,11 +326,35 @@ var ModelsManager = {
                this.deleteLinkFromRefRecord(field, oldRecord, oldValue);
             }
          }
+         curRecord[fieldName] = null;
       }
       this.deleteIndexes(modelName, oldRecord);
       this.invokeDeletedListeners(modelName, oldRecord);
       SyncQueue.addObject(modelName, oldRecord, SyncQueue.actionDelete);
       delete this.oldData[modelName][ID];
+   },
+   deleteIfNoLink: function(modelName, ID) {
+      var model = this.models[modelName];
+      var curRecord = this.curData[modelName][ID];
+      if ((curRecord == null) || (curRecord.reallyInserted)) {
+         return;
+      }
+      for (var linkName in model.links) {
+         var link = model.links[linkName];
+         if (curRecord[linkName] != undefined) {
+            var linkData = curRecord[linkName];
+            if (link.type == "array") {
+               if (linkData.length > 0) {
+                  return
+               }
+            } else if ((link.type == "object") || (link.type == "object_list")) {
+               if (objectHasProperties(linkData)) {
+                  return
+               }
+            }
+         }
+      }
+      delete this.curData[modelName][ID];
    },
    reinit: function() {
       if (!this.initDone) {
@@ -486,7 +520,6 @@ var ModelsManager = {
    deleteRecord: function(modelName, ID, requestSetName) {
       var record = this.curData[modelName][ID];
       if (!record || !requestSetName || !record.requestSets) {
-         delete this.curData[modelName][ID];
          this.deleted(modelName, ID);
          return;
       }
@@ -494,7 +527,6 @@ var ModelsManager = {
       if (requestSets[requestSetName]) {
          delete requestSets[requestSetName];
          if (!objectHasProperties(requestSets)) {
-            delete this.curData[modelName][ID];
             this.deleted(modelName, ID);
          }
       }
