@@ -248,9 +248,14 @@ var TreeView = Class.extend({
       };
    },
 
-   getRelationTitle: function(relation) {
+   getRelationTitle: function(relation, removeTags) {
       var title = this.getObjectTitle(relation[this.childFieldName], relation);
-      return relation[this.iChildOrderFieldName] + ": " + title;
+      var res = relation[this.iChildOrderFieldName] + ": " + title;
+      if (removeTags) {
+         res = res.replace(/<(?:.|\n)*?>/gm, '');
+         res = res.replace(/\[(?:.|\n)*?\]/gm, '');
+      }
+      return res;
    },
 
    getTree: function(childObject, title, relationID, depth) {
@@ -366,7 +371,7 @@ var TreeView = Class.extend({
          return false;
       }
       var objectParent = relation[this.parentFieldName];
-      if (!confirm("Êtes-vous certain de vouloir retirer " + this.getRelationTitle(relation) + " de " + this.getObjectTitle(objectParent) + " ?")) {
+      if (!confirm('Êtes-vous certain de vouloir retirer "' + this.getRelationTitle(relation, true) + '" de "' + this.getObjectTitle(objectParent, true) + '" ?')) {
          return false;
       }
       if (this.selectedRelationID == node.data.idRelation) {
