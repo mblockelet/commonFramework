@@ -326,12 +326,13 @@ var ModelsManager = {
                this.deleteLinkFromRefRecord(field, oldRecord, oldValue);
             }
          }
-         curRecord[fieldName] = null;
+         //curRecord[fieldName] = null;
       }
       this.deleteIndexes(modelName, oldRecord);
       this.invokeDeletedListeners(modelName, oldRecord);
       SyncQueue.addObject(modelName, oldRecord, SyncQueue.actionDelete);
       delete this.oldData[modelName][ID];
+      delete this.curData[modelName][ID];
    },
    deleteIfNoLink: function(modelName, ID) {
       var model = this.models[modelName];

@@ -350,6 +350,7 @@ var TreeView = Class.extend({
          ModelsManager.deleteRecord(this.relationsModelName, relation.ID);
       }
       this.changeChildrenOrderBetween(parent, -1, iChildOrder + 1);
+      this.cleanupOrders(parent);
    },
 
    deleteObjectFromNode: function(node) {
@@ -408,14 +409,13 @@ var TreeView = Class.extend({
    cleanupOrders: function(parentObject) {
       var childrenIDsSorted = [];
       var children = parentObject[this.childrenFieldName];
-      for (var iChild = 0; iChild < children.length; iChild++) {
-         var childRelation = children[iChild];
+      $.each(children, function(iChild, childRelation) {
          childrenIDsSorted.push({
             ID: childRelation.ID,
             order: childRelation[this.iChildOrderFieldName],
             iChild: iChild
          });
-      }
+      });
       childrenIDsSorted.sort(function(childIDA, childIDB) {
          if (childIDA.order < childIDB.order) {
             return -1;
@@ -484,7 +484,7 @@ var TreeView = Class.extend({
       newRelation[this.idChildFieldName] = object.ID;
       if (hitMode === "over") {
          newRelation[this.idParentFieldName] = targetRelation[this.childFieldName].ID;
-         this.cleanupOrders(targetRelation[this.childFieldName]);
+         //this.cleanupOrders(targetRelation[this.childFieldName]);
          newRelation[this.iChildOrderFieldName] = this.firstAvailableOrder(targetRelation[this.childFieldName]);
       } else {
          this.cleanupOrders(targetRelation[this.parentFieldName]);
@@ -499,6 +499,7 @@ var TreeView = Class.extend({
       if (this.relationCreated != undefined) {
          this.relationCreated(newRelation);
       }
+      this.cleanupOrders(targetRelation[this.childFieldName]);
       ModelsManager.insertRecord(this.relationsModelName, newRelation);
    },
 
