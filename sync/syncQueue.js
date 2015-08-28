@@ -1,10 +1,18 @@
-"use strict";
+(function() {
+'use strict';
+
+var objectHasProperties = function(object) {
+   for (var iProperty in object) {
+      return true;
+   }
+   return false;
+};
 
 var syncScope;
 
 // needed for sync module
-if (typeof rootUrl === 'undefined') {
-   var rootUrl = '../';
+if (typeof window.rootUrl === 'undefined') {
+   window.rootUrl = '../';
 }
 
 function logError(details) {
@@ -18,6 +26,7 @@ window.onerror = function(message, file, line) {
   logError(file + ':' + line + '\n\n' + message);
 };
 
+// TODO: this doesn't work anymore with angular > 1.3, provide a real module
 function SyncCtrl($scope, $timeout) {
    $scope.syncStatus = function() {
       var params = [];
@@ -90,7 +99,7 @@ function SyncCtrl($scope, $timeout) {
     });
 }
 
-var SyncQueue = {
+window.SyncQueue = {
    modelsManager: null,
    status: 0,
    statusIdle: 0,
@@ -558,3 +567,5 @@ var SyncQueue = {
       this.isApplyingChanges = false;
    },
 };
+
+})();

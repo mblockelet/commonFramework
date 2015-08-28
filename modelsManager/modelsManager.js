@@ -1,6 +1,27 @@
-"use strict";
+(function() {
+'use strict';
 
-var ModelsManager = {
+var objectHasProperties = function(object) {
+   for (var iProperty in object) {
+      return true;
+   }
+   return false;
+};
+
+var removeFromArrayByKey = function(arrayFrom, key, itemID) {
+  var itemIndex;
+  for (var iItem = 0; iItem < arrayFrom.length; iItem++) {
+     if (arrayFrom[iItem][key] === itemID) {
+        itemIndex = iItem;
+        break;
+     }
+  }
+  if (itemIndex) {
+     arrayFrom.splice(itemIndex, 1);
+  }
+};
+
+window.ModelsManager = {
    models: null,
    counts: {},
    curData: {},
@@ -239,7 +260,7 @@ var ModelsManager = {
          if (oldValue != null) {
             var refRecord = this.curData[field.refModel][oldValue];
             if (refRecord != undefined) {
-               refRecord[field.invLink].removeByID(oldRecord[primaryKey]);
+               removeFromArrayByKey(refRecord[field.invLink], primaryKey, oldRecord[primaryKey]);
             }
          }
       }
@@ -258,7 +279,7 @@ var ModelsManager = {
          delete refRecordLink[oldIndex];
       }
       else if (refLink.type == "object_list") {
-         refRecordLink[oldIndex].removeByID(linkID);
+         removeFromArrayByKey(refRecordLink[oldIndex], primaryKey, linkID);
          if (refRecordLink[oldIndex].length == 0) {
             delete refRecordLink[oldIndex];
          }
@@ -346,11 +367,11 @@ var ModelsManager = {
             var linkData = curRecord[linkName];
             if (link.type == "array") {
                if (linkData.length > 0) {
-                  return
+                  return;
                }
             } else if ((link.type == "object") || (link.type == "object_list")) {
                if (objectHasProperties(linkData)) {
-                  return
+                  return;
                }
             }
          }
@@ -753,3 +774,5 @@ var ModelsManager = {
    }
 
 };
+
+})();
