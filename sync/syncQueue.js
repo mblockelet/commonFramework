@@ -10,9 +10,9 @@ var objectHasProperties = function(object) {
 
 var syncScope;
 
-// needed for sync module
+// TODO: clean through instanciation with options
 if (typeof window.rootUrl === 'undefined') {
-   window.rootUrl = '../';
+   window.rootUrl = 'commonFramework/';
 }
 
 function logError(details) {
