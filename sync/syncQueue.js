@@ -330,7 +330,7 @@ window.SyncQueue = {
 
    initErrorHandler: function() {
       // TODO: call on document for jquery 1.8+
-      $( "body" ).ajaxError(function(e, jqxhr, settings, exception) {
+      $(document).ajaxError(function(e, jqxhr, settings, exception) {
         if (settings.url == rootUrl + "sync/syncServer.php") {
             SyncQueue.syncFailed("ajaxError", false, 3);
         }
