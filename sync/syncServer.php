@@ -3,9 +3,9 @@
 
 $startTime = microtime(true);
 
-require_once("syncCommon.php");
-require_once("../../shared/connect.php");
-require_once("../../shared/syncRequests.php");
+require_once __DIR__."/syncCommon.php";
+require_once __DIR__."/../../shared/connect.php";
+require_once __DIR__."/../../shared/syncRequests.php";
 if (file_exists( __DIR__."/../../shared/debug.php")) {
    include_once __DIR__."/../../shared/debug.php"; // not required
 } else {

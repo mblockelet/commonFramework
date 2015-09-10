@@ -653,6 +653,8 @@ function insertRows($db, $request, $roles) {
       }
       if ($stmt->rowCount() == 0) {
          error_log("nothing inserted ".json_encode($record));
+         error_log($query);
+         error_log(json_encode($values));
          $insertIDs[$key] = 0;
       } else {
          $insertIDs[$key] = $db->lastInsertId();

@@ -4,11 +4,11 @@
 require_once __DIR__."/../../shared/connect.php";
 require_once __DIR__."/../../shared/models.php";
 require_once __DIR__."/../modelsManager/modelsManager.php";
-require_once("triggersManager.inc.php");
+require_once "triggersManager.inc.php";
 
-include_once __DIR__."/../../shared/custom_triggers.php";
+if (file_exists( __DIR__."/../../shared/custom_triggers.php")) {
+   include_once __DIR__."/../../shared/custom_triggers.php";
+}
 
 TriggerManager::$debug = true;
 TriggerManager::generateAllTriggers($tablesModels);
-
-?>
