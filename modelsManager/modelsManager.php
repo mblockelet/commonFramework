@@ -593,7 +593,11 @@ function updateRows($db, $request, $roles) {
          if (isset($viewModel['fields'][$fieldName]) && isset($viewModel['fields'][$fieldName]['readOnly']) && $viewModel['fields'][$fieldName]['readOnly']) {
             continue;
          }
-         $values[$fieldName] = $record["values"][$fieldName];
+         if (isset($viewModel['fields'][$fieldName]) && isset($viewModel['fields'][$fieldName]['imposedWriteValue'])) {
+            $values[$fieldName] = $viewModel['fields'][$fieldName]['imposedWriteValue'];
+         } else {
+            $values[$fieldName] = $record["values"][$fieldName];
+         }
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
          if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "update")) {
@@ -631,7 +635,11 @@ function insertRows($db, $request, $roles) {
          if (isset($record["values"][$fieldName])) {
             $values[$fieldName] = $record["values"][$fieldName];
          } else if (!isset($viewModel['fields'][$fieldName]['readOnly']) || !$viewModel['fields'][$fieldName]['readOnly']) {
-            $values[$fieldName] = null;
+            if (isset($viewModel['fields'][$fieldName]) && isset($viewModel['fields'][$fieldName]['imposedWriteValue'])) {
+               $values[$fieldName] = $viewModel['fields'][$fieldName]['imposedWriteValue'];
+            } else {
+               $values[$fieldName] = $record["values"][$fieldName];
+            }
          }
       }
       if (!hasAutoincrementID($viewModel)) {

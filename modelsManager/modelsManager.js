@@ -441,7 +441,7 @@ window.ModelsManager = {
             }
          }
          if ((oldValue !== curValue) || forceRecompute) {
-            if ((field.link != undefined) && (curValue != null))  {
+            if ((field.link != undefined) && (curValue != null)) {
                if (this.curData[field.refModel][curValue] == undefined) {
                   this.createRecordPlaceholder(field.refModel, curValue);
                }
