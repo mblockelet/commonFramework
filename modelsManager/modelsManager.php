@@ -125,7 +125,7 @@ function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $oper
    if (isset($filterValue["modes"]) && (!isset($filterValue["modes"][$operation]) || !$filterValue["modes"][$operation])) {
       return false;
    }
-   if ($filtersUsed === null) {
+   if ($filtersUsed === null && isset($viewModel["filters"][$filterName])) {
       return true;
    }
    return (isset($filtersUsed[$filterName]) && $filtersUsed[$filterName]);
@@ -522,8 +522,8 @@ function getSelectExecValues($request) {
    return $values;
 }
 
-function addFilterValues($viewModel, $filterName, $filterValue, $prefix, &$values) {
-   if (!isset($viewModel["filters"][$filterName]) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
+function addFilterValues($viewModel, $filterName, $filterValue, $prefix, &$values, $filtersUsed = null) {
+   if ((!isset($viewModel["filters"][$filterName]) && !isset($filtersUsed[$filterName])) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
       return;
    }
    if (gettype($filterValue) == 'array') {
@@ -600,12 +600,12 @@ function updateRows($db, $request, $roles) {
          }
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
-         if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "update")) {
+         if (!filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsedForNewValues, "update")) {
             continue;
          }
-         addFilterValues($viewModel, $filterName, $filterValue, 'filterOld_', $values);
+         addFilterValues($viewModel, $filterName, $filterValue, 'filterOld_', $values, $filtersUsedForNewValues);
          if (isset($filtersUsedForNewValues[$filterName])) {
-            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values);
+            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, $filtersUsedForNewValues);
          }
       }
       if (isset($request['debugLogFunction'])) {
@@ -646,11 +646,11 @@ function insertRows($db, $request, $roles) {
          $values[$ID] = (isset($record[$ID]) && $record[$ID]) ? $record[$ID] : getRandomID();
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
-         if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "insert")) {
+         if (!filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsedForNewValues, "insert")) {
             continue;
          }
          if (isset($filtersUsedForNewValues[$filterName])) {
-            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values);
+            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, $filtersUsedForNewValues);
          }
       }
       if (isset($request['debugLogFunction'])) {
