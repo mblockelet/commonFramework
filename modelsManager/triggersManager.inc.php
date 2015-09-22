@@ -8,13 +8,15 @@ class TriggerManager {
          if (isset($tableModel["hasHistory"]) && ($tableModel["hasHistory"] == false)) {
             continue;
          }
-         $listFields = array("`ID`");
-         $listFieldsNewValues = array("NEW.`ID`");
-         $listFieldsOldValues = array("OLD.`ID`");
+         $idField = isset($tableModel["primaryKey"]) ? $tableModel["primaryKey"] : 'ID';
+         echo $idField;
+         $listFields = array('`'.$idField.'`');
+         $listFieldsNewValues = array('NEW.`'.$idField.'`');
+         $listFieldsOldValues = array('OLD.`'.$idField.'`');
+         $conditions = 'OLD.`'.$idField.'` = NEW.`'.$idField.'`';
          $listFields[] = "`iVersion`";
          $listFieldsNewValues[] = "@curVersion";
          $listFieldsOldValues[] = "@curVersion";
-         $conditions = 'OLD.`ID` = NEW.`ID`';
          foreach ($tableModel["fields"] as $fieldName => $field) {
             $listFields[] = "`".$fieldName."`";
             if (! isset($field['skipHistory']) ||  ! $field['skipHistory']) {
@@ -36,14 +38,14 @@ class TriggerManager {
                   "END IF; ".
                   "IF NOT (".$conditions.") THEN ".
                   "  SET NEW.iVersion = @curVersion; ".
-                  "  UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `ID` = OLD.`ID` AND `iNextVersion` IS NULL; ".
+                  "  UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `ID` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
                   "  INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") ".
                   "      VALUES (".implode(",", $listFieldsNewValues).") ".
                   "; END IF";
 
          $triggers[$tableName]["BEFORE DELETE"][] =
                   "SELECT `iVersion` INTO @curVersion FROM `synchro_version`; ".
-                  "UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `ID` = OLD.`ID` AND `iNextVersion` IS NULL; ".
+                  "UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
                   "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).", `bDeleted`) ".
                      "VALUES (".implode(",", $listFieldsOldValues).", 1)";
       }
@@ -51,10 +53,11 @@ class TriggerManager {
 
    static function addRandomIDTriggers($tablesModels, &$triggers) {
       foreach ($tablesModels as $tableName => $tableModel) {
-         if (isset($tableModel["autoincrementID"]) && $tableModel["autoincrementID"]) {
+         if ((isset($tableModel["autoincrementID"]) && $tableModel["autoincrementID"]) || (isset($tableModel["primaryKey"]) && !$tableModel["primaryKey"])) {
             continue;
          }
-         $triggers[$tableName]["BEFORE INSERT"][] = "IF (NEW.ID IS NULL OR NEW.ID = 0) THEN SET NEW.ID = FLOOR(RAND() * 1000000000) + FLOOR(RAND() * 1000000000) * 1000000000; END IF ";
+         $idField = isset($tableModel["primaryKey"]) ? $tableModel["primaryKey"] : 'ID';
+         $triggers[$tableName]["BEFORE INSERT"][] = "IF (NEW.".$idField." IS NULL OR NEW.".$idField." = 0) THEN SET NEW.".$idField." = FLOOR(RAND() * 1000000000) + FLOOR(RAND() * 1000000000) * 1000000000; END IF ";
       }
    }
 
