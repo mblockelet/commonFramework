@@ -505,10 +505,10 @@ var TreeView = Class.extend({
    dropObject: function(targetNode, sourceNode, hitMode, action) {
       //logMsg("tree.onDrop(%o, %o, %s)", node, sourceNode, hitMode);
       var relation = ModelsManager.getRecord(this.relationsModelName, sourceNode.data.idRelation);
+      this.addObjectToTargetNode(relation[this.childFieldName], targetNode, hitMode);
       if (action == "drop_move") {
          this.doDeleteRelation(relation);
       }
-      this.addObjectToTargetNode(relation[this.childFieldName], targetNode, hitMode);
       return true;
    },
 
