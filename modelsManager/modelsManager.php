@@ -642,8 +642,8 @@ function insertRows($db, $request, $roles) {
             }
          }
       }
-      if (!hasAutoincrementID($viewModel)) {
-         $values[$ID] = $record[$ID];
+      if (!hasAutoincrementID($viewModel) && $ID) {
+         $values[$ID] = (isset($record[$ID]) && $record[$ID]) ? $record[$ID] : getRandomID();
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
          if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "insert")) {
@@ -665,7 +665,11 @@ function insertRows($db, $request, $roles) {
          error_log(json_encode($values));
          $insertIDs[$key] = 0;
       } else {
-         $insertIDs[$key] = $db->lastInsertId();
+         if (!hasAutoincrementID($viewModel) && $ID) {
+            $insertIDs[$key] = $ID ? $values[$ID] : null;
+         } else {
+            $insertIDs[$key] = $db->lastInsertId();
+         }
       }
    }
    $joinsUsed = getJoinsUsed($request, "read", "insert", $filtersUsedForNewValues, $roles);
