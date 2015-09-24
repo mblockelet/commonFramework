@@ -236,6 +236,9 @@ window.ModelsManager = {
       var model = this.models[modelName];
       var oldRecord = this.oldData[modelName][ID];
       var curRecord = this.curData[modelName][ID];
+      if (!oldRecord || !curRecord) {
+         return;
+      }
       for(var fieldName in model.fields) {
          curRecord[fieldName] = oldRecord[fieldName];
       }
@@ -420,6 +423,10 @@ window.ModelsManager = {
       var primaryKey = this.getPrimaryKey(modelName);
       var oldRecord = this.oldData[modelName][ID];
       var curRecord = this.curData[modelName][ID];
+      if (!oldRecord || !curRecord) {
+         console.error('trying to update inexistant ID '+ID+' in model '+modelName);
+         return;
+      }
       var fieldName;
       for(fieldName in model.fields) {
          var field = model.fields[fieldName];
