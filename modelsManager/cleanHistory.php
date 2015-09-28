@@ -2,8 +2,8 @@
 
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
-require_once __DIR__."/../shared/connect.php";
-require_once __DIR__."/../shared/models.php";
+require_once __DIR__."/../../shared/connect.php";
+require_once __DIR__."/../../shared/models.php";
 
 echo "To clean all history tables completely, run the following queries :<br/>";
 foreach ($tablesModels as $tableName => $tableModel) {
