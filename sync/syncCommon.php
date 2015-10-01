@@ -133,7 +133,7 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
             }
          }
       }
-      if (($nbChanges > $maxChanges) && ($maxVersion > $minVersion)) {
+      if (($nbChanges > $maxChanges) && ($maxVersion > $minVersion + 1)) {
          error_log("Too many changes for request ".$requestName." (".$nbChanges.") ".$minVersion."-".$maxVersion);
          return null;
       }
