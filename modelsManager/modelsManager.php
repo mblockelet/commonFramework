@@ -70,6 +70,8 @@ function propagateJoinsUsedTowardsMainTable($viewModel, $joinsUsed) {
    return $joinsUsed;
 }
 
+// function returning filters which result may be affected by the modifications
+// made by the request
 function filtersAffectedByUpdate($request, $operation) {
    $viewModel = $request["model"];
    $fieldsUsed = getFieldsUsedByTable($request);
@@ -118,6 +120,8 @@ function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $oper
       if (isset($filter["readOnly"]) && $filter["readOnly"] && ($operation != "select")) {
          return false;
       }
+   } elseif (!$viewModel["fields"][$filterName]) {
+      throw new Exception('cannot find asked filter '.$filterName);
    }
    if (isset($filterValue["readOnly"]) && ($filterValue["readOnly"] == true) && ($operation != "select")) {
       return false;
@@ -125,7 +129,7 @@ function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $oper
    if (isset($filterValue["modes"]) && (!isset($filterValue["modes"][$operation]) || !$filterValue["modes"][$operation])) {
       return false;
    }
-   if ($filtersUsed === null && isset($viewModel["filters"][$filterName])) {
+   if ($filtersUsed === null) {
       return true;
    }
    return (isset($filtersUsed[$filterName]) && $filtersUsed[$filterName]);
@@ -600,12 +604,12 @@ function updateRows($db, $request, $roles) {
          }
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
-         if (!filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsedForNewValues, "update")) {
+         if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "update")) {
             continue;
          }
-         addFilterValues($viewModel, $filterName, $filterValue, 'filterOld_', $values, $filtersUsedForNewValues);
+         addFilterValues($viewModel, $filterName, $filterValue, 'filterOld_', $values, null);
          if (isset($filtersUsedForNewValues[$filterName])) {
-            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, $filtersUsedForNewValues);
+            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, null);
          }
       }
       if (isset($request['debugLogFunction'])) {
@@ -646,11 +650,11 @@ function insertRows($db, $request, $roles) {
          $values[$ID] = (isset($record[$ID]) && $record[$ID]) ? $record[$ID] : getRandomID();
       }
       foreach ($request["filters"] as $filterName => $filterValue) {
-         if (!filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsedForNewValues, "insert")) {
+         if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "insert")) {
             continue;
          }
          if (isset($filtersUsedForNewValues[$filterName])) {
-            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, $filtersUsedForNewValues);
+            addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values);
          }
       }
       if (isset($request['debugLogFunction'])) {
