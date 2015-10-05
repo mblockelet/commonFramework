@@ -391,7 +391,6 @@ window.ModelsManager = {
             console.error('reinitialize groups_groups');
          }
          for (var recordID in this.curData[modelName]) {
-            console.error('reinitialize' + recordID);
             this.invokeDeletedListeners(modelName, this.curData[modelName][recordID]);
          }
          this.curData[modelName] = {};
