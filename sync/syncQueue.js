@@ -27,7 +27,7 @@ window.onerror = function(message, file, line) {
 };
 
 // TODO: this doesn't work anymore with angular > 1.3, provide a real module
-function SyncCtrl($scope, $timeout) {
+window.SyncCtrl = function($scope, $timeout) {
    $scope.syncStatus = function() {
       var params = [];
       params[SyncQueue.statusIdle] = { strStatus: "I", color: "green"};
