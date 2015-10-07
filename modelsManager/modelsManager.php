@@ -120,7 +120,7 @@ function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $oper
       if (isset($filter["readOnly"]) && $filter["readOnly"] && ($operation != "select")) {
          return false;
       }
-   } elseif (!$viewModel["fields"][$filterName]) {
+   } elseif (($filterName != "recordID") && (!$viewModel["fields"][$filterName])) {
       throw new Exception('cannot find asked filter '.$filterName);
    }
    if (isset($filterValue["readOnly"]) && ($filterValue["readOnly"] == true) && ($operation != "select")) {
