@@ -27,8 +27,16 @@ window.ModelsManager = {
    curData: {},
    oldData: {},
    listeners: {
-      deleted: {},
-      updated: {},
+      deleted:  {},
+      updated:  {},
+      inserted: {},
+      safe_deleted:  {},
+      safe_updated:  {},
+      safe_inserted: {}
+   },
+   safe_listeners_records: {
+      deleted:  {},
+      updated:  {},
       inserted: {}
    },
    indexes: {},
@@ -44,6 +52,12 @@ window.ModelsManager = {
          this.listeners.deleted[modelName] = {};
          this.listeners.updated[modelName] = {};
          this.listeners.inserted[modelName] = {};
+         this.listeners.safe_deleted[modelName] = {};
+         this.listeners.safe_updated[modelName] = {};
+         this.listeners.safe_inserted[modelName] = {};
+         this.safe_listeners_records.deleted[modelName] = [];
+         this.safe_listeners_records.updated[modelName] = [];
+         this.safe_listeners_records.inserted[modelName] = [];
          var indexes = models[modelName].indexes;
          if (indexes != undefined) {
             for (var iIndex = 0; iIndex < indexes.length; iIndex++) {
@@ -55,12 +69,13 @@ window.ModelsManager = {
       this.initDone = true;
    },
 
-   addListener: function(modelName, listenerType, id, callback) {
-      this.listeners[listenerType][modelName][id] = callback;
+   addListener: function(modelName, listenerType, id, callback, safe) {
+      this.listeners[(safe ? 'safe_' : '')+listenerType][modelName][id] = callback;
    },
 
    removeListener: function(modelName, listenerType, id) {
       delete this.listeners[listenerType][modelName][id];
+      delete this.listeners['safe_'+listenerType][modelName][id];
    },
 
    invokeUpdatedListeners: function(modelName, curRecord, oldRecord) {
@@ -68,6 +83,9 @@ window.ModelsManager = {
       for (var iListener in listeners) {
          var listener = listeners[iListener];
          listener(curRecord, oldRecord);
+      }
+      if (this.listeners.safe_updated != {}) { // ugly, but cannot use getOwnPropertyNames().length
+         this.safe_listeners_records.updated[modelName].push([curRecord, oldRecord]);
       }
    },
 
@@ -77,6 +95,9 @@ window.ModelsManager = {
          var listener = listeners[iListener];
          listener(curRecord);
       }
+      if (this.listeners.safe_inserted != {}) {
+         this.safe_listeners_records.inserted[modelName].push(curRecord);
+      }
    },
 
    invokeDeletedListeners: function(modelName, oldRecord) {
@@ -84,6 +105,34 @@ window.ModelsManager = {
       for (var iListener in listeners) {
          var listener = listeners[iListener];
          listener(oldRecord);
+      }
+      if (this.listeners.safe_deleted != {}) {
+         this.safe_listeners_records.deleted[modelName].push(oldRecord);
+      }
+   },
+
+   invokeSafeListeners: function(listenerType, modelName) {
+      var listeners = this.listeners['safe_'+listenerType][modelName];
+      for (var iListener in listeners) {
+         var listener = listeners[iListener];
+         var records = this.safe_listeners_records[listenerType][modelName];
+         for (var iRecordSet=0 ; iRecordSet < records.length ; iRecordSet++ ) {
+            var recordSet = records[iRecordSet];
+            if (listenerType == 'updated') {
+               listener(recordSet[0], recordSet[1]);
+            } else {
+               listener(recordSet);
+            }
+         }
+      }
+   },
+
+   invokeAllSafeListeners: function() {
+      for (var listenerType in this.safe_listeners_records) {
+         for (var modelName in this.listeners['safe_'+listenerType]) {
+            this.invokeSafeListeners(listenerType, modelName);
+            this.safe_listeners_records[listenerType][modelName] = [];
+         }
       }
    },
 

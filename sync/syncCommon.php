@@ -60,7 +60,7 @@ function syncGetTablesRequests($tables = null) {
 function syncGetCounts($db, $requests, $minVersion, $maxVersion) {
    $allCounts = array();
    foreach ($requests as $requestName => $request) {
-      if (!isset($request["countRows"]) || !$request["countRows"]) {
+      if (true) {//isset($request["countRows"]) && !$request["countRows"]) {
          continue;
       }
       $curMinVersion = $minVersion;
@@ -87,9 +87,6 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
    $allChanges = array("requestSets" => array());
    $nbChanges = 0;
    foreach ($requests as $requestName => $request) {
-      if (isset($request["getChanges"]) && !$request["getChanges"]) {
-         continue;
-      }
       if (!$request || !is_array($request)) {
          error_log('something is wrong with request '.print_r($request, true));
          continue;
@@ -100,7 +97,11 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          $curMinVersion = $request["minVersion"];
       }
       $markRequest = isset($request["markRequest"]) ? $request["markRequest"] : false;
-      $requestChanges = getChangesSince($db, $request, $curMinVersion, $maxVersion, $requestName, $markRequest, $maxVersionIsDefault);
+      if (!isset($request["getChanges"]) || $request["getChanges"]) {
+         $requestChanges = getChangesSince($db, $request, $curMinVersion, $maxVersion, $requestName, $markRequest, $maxVersionIsDefault);
+      } else {
+         $requestChanges = null;
+      }
       $modelName = $request["modelName"];
       if (isset($request["requestSet"])) {
          $setName = $request["requestSet"]["name"];

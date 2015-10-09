@@ -473,6 +473,7 @@ window.SyncQueue = {
                   SyncQueue.setStatus(SyncQueue.statusIdle);
                }
                ModelsManager.sortAllMarked();
+               ModelsManager.invokeAllSafeListeners();
                SyncQueue.callSyncEndListeners(data);
                SyncQueue.serverVersion = SyncQueue.resetSync ? 0 : data.serverVersion;
                if (!data.continued) {
