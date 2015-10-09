@@ -613,14 +613,14 @@ var TreeView = Class.extend({
       if (!this.staticData) {
          SyncQueue.addSyncStartListeners(this.name, this.triggers.syncStarted);
          SyncQueue.addSyncEndListeners(this.name, this.triggers.syncEnded);
-         ModelsManager.addListener(this.relationsModelName, "inserted", this.name, this.triggers.relationInserted);
-         ModelsManager.addListener(this.relationsModelName, "updated", this.name, this.triggers.relationUpdated);
-         ModelsManager.addListener(this.relationsModelName, "deleted", this.name, this.triggers.relationDeleted);
-         ModelsManager.addListener(this.objectsModelName, "updated", this.name, this.triggers.objectUpdated);
-         ModelsManager.addListener(this.objectsModelName, "inserted", this.name, this.triggers.objectUpdated);
+         ModelsManager.addListener(this.relationsModelName, "inserted", this.name, this.triggers.relationInserted, true);
+         ModelsManager.addListener(this.relationsModelName, "updated", this.name, this.triggers.relationUpdated, true);
+         ModelsManager.addListener(this.relationsModelName, "deleted", this.name, this.triggers.relationDeleted, true);
+         ModelsManager.addListener(this.objectsModelName, "updated", this.name, this.triggers.objectUpdated, true);
+         ModelsManager.addListener(this.objectsModelName, "inserted", this.name, this.triggers.objectUpdated, true);
          if (this.objectsStringsModelName != null) {
-            ModelsManager.addListener(this.objectsStringsModelName, "inserted", this.name, this.triggers.objectStringsUpdated);
-            ModelsManager.addListener(this.objectsStringsModelName, "updated", this.name, this.triggers.objectStringsUpdated);
+            ModelsManager.addListener(this.objectsStringsModelName, "inserted", this.name, this.triggers.objectStringsUpdated, true);
+            ModelsManager.addListener(this.objectsStringsModelName, "updated", this.name, this.triggers.objectStringsUpdated, true);
          }
       } else {
          SyncQueue.addSyncEndListeners(this.name, this.triggers.syncEnded);
