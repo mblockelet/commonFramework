@@ -29,12 +29,14 @@ window.ModelsManager = {
    listeners: {
       deleted:  {},
       updated:  {},
-      inserted: {},
-      safe_deleted:  {},
-      safe_updated:  {},
-      safe_inserted: {}
+      inserted: {}
    },
-   safe_listeners_records: {
+   safeListeners: {
+      deleted:  {},
+      updated:  {},
+      inserted: {}
+   },
+   safeListenersRecords: {
       deleted:  {},
       updated:  {},
       inserted: {}
@@ -52,12 +54,12 @@ window.ModelsManager = {
          this.listeners.deleted[modelName] = {};
          this.listeners.updated[modelName] = {};
          this.listeners.inserted[modelName] = {};
-         this.listeners.safe_deleted[modelName] = {};
-         this.listeners.safe_updated[modelName] = {};
-         this.listeners.safe_inserted[modelName] = {};
-         this.safe_listeners_records.deleted[modelName] = [];
-         this.safe_listeners_records.updated[modelName] = [];
-         this.safe_listeners_records.inserted[modelName] = [];
+         this.safeListeners.deleted[modelName] = {};
+         this.safeListeners.updated[modelName] = {};
+         this.safeListeners.inserted[modelName] = {};
+         this.safeListenersRecords.deleted[modelName] = [];
+         this.safeListenersRecords.updated[modelName] = [];
+         this.safeListenersRecords.inserted[modelName] = [];
          var indexes = models[modelName].indexes;
          if (indexes != undefined) {
             for (var iIndex = 0; iIndex < indexes.length; iIndex++) {
@@ -70,12 +72,12 @@ window.ModelsManager = {
    },
 
    addListener: function(modelName, listenerType, id, callback, safe) {
-      this.listeners[(safe ? 'safe_' : '')+listenerType][modelName][id] = callback;
+      this[safe ? 'safeListeners' : 'listeners'][listenerType][modelName][id] = callback;
    },
 
    removeListener: function(modelName, listenerType, id) {
       delete this.listeners[listenerType][modelName][id];
-      delete this.listeners['safe_'+listenerType][modelName][id];
+      delete this.safeListeners[listenerType][modelName][id];
    },
 
    invokeUpdatedListeners: function(modelName, curRecord, oldRecord) {
@@ -85,7 +87,7 @@ window.ModelsManager = {
          listener(curRecord, oldRecord);
       }
       if (this.listeners.safe_updated != {}) { // ugly, but cannot use getOwnPropertyNames().length
-         this.safe_listeners_records.updated[modelName].push([curRecord, oldRecord]);
+         this.safeListenersRecords.updated[modelName].push([curRecord, oldRecord]);
       }
    },
 
@@ -96,7 +98,7 @@ window.ModelsManager = {
          listener(curRecord);
       }
       if (this.listeners.safe_inserted != {}) {
-         this.safe_listeners_records.inserted[modelName].push(curRecord);
+         this.safeListenersRecords.inserted[modelName].push(curRecord);
       }
    },
 
@@ -107,15 +109,15 @@ window.ModelsManager = {
          listener(oldRecord);
       }
       if (this.listeners.safe_deleted != {}) {
-         this.safe_listeners_records.deleted[modelName].push(oldRecord);
+         this.safeListenersRecords.deleted[modelName].push(oldRecord);
       }
    },
 
    invokeSafeListeners: function(listenerType, modelName) {
-      var listeners = this.listeners['safe_'+listenerType][modelName];
+      var listeners = this.safeListeners[listenerType][modelName];
       for (var iListener in listeners) {
          var listener = listeners[iListener];
-         var records = this.safe_listeners_records[listenerType][modelName];
+         var records = this.safeListenersRecords[listenerType][modelName];
          for (var iRecordSet=0 ; iRecordSet < records.length ; iRecordSet++ ) {
             var recordSet = records[iRecordSet];
             if (listenerType == 'updated') {
@@ -128,10 +130,10 @@ window.ModelsManager = {
    },
 
    invokeAllSafeListeners: function() {
-      for (var listenerType in this.safe_listeners_records) {
-         for (var modelName in this.listeners['safe_'+listenerType]) {
+      for (var listenerType in this.safeListenersRecords) {
+         for (var modelName in this.safeListeners[listenerType]) {
             this.invokeSafeListeners(listenerType, modelName);
-            this.safe_listeners_records[listenerType][modelName] = [];
+            this.safeListenersRecords[listenerType][modelName] = [];
          }
       }
    },
