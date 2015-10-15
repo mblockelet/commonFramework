@@ -57,17 +57,17 @@ function syncGetTablesRequests($tables = null) {
    return $requests;
 }
 
-function syncGetCounts($db, $requests, $minVersion, $maxVersion) {
+function syncGetCounts($db, $requests, $minVersion, $maxVersion, $maxVersionIsDefault) {
    $allCounts = array();
    foreach ($requests as $requestName => $request) {
-      if (true) {//isset($request["countRows"]) && !$request["countRows"]) {
+      if (isset($request["countRows"]) && !$request["countRows"]) {
          continue;
       }
       $curMinVersion = $minVersion;
       if (isset($request["minVersion"])) {
          $curMinVersion = $request["minVersion"];
       }
-      $requestCounts = getChangesCountSince($db, $request, $curMinVersion, $maxVersion);
+      $requestCounts = getChangesCountSince($db, $request, $curMinVersion, $maxVersion, $maxVersionIsDefault);
       $allCounts[$requestName] = $requestCounts;
    }
    return $allCounts;

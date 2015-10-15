@@ -125,7 +125,7 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
       $continued = true;
       $maxVersion = max($minServerVersion + 1, floor(($minServerVersion + $maxVersion) / 2));
    }
-   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion);
+   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion, $maxVersion == $curVersions->iVersion);
    if (function_exists("syncAddCustomServerChanges")) {
       syncDebug('syncAddCustomServerChanges', 'begin');
       syncAddCustomServerChanges($db, $minServerVersion, $serverChanges, $serverCounts, $params);

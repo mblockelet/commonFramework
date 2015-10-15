@@ -173,17 +173,27 @@ enreg à modifier : ceux qui sont présents dans les 2 et dont le maxVersion des
    => _maxVersion >= minVersion
 */
 
-function getChangesCountSince($db, $request, $minVersion, $maxVersion) {
+function getChangesCountSince($db, $request, $minVersion, $maxVersion, $maxVersionIsDefault = false) {
    $changedRecords = array();
-   $query = getSelectQueryDeleted($request, $minVersion, $maxVersion, "countOnly");
-   $stmt = $db->prepare($query);
-   $stmt->execute($request["filters"]);
-   $row = $stmt->fetchObject();
-   $changedRecords["deleted"] = $row->nbRows;
+   if ($minVersion != 0) {
+      $query = getSelectQueryDeleted($request, $minVersion, $maxVersion, "countOnly");
+      $stmt = $db->prepare($query);
+      $selectExecValues = getSelectExecValues($request);
+      $stmt->execute($selectExecValues);
+      $row = $stmt->fetchObject();
+      $changedRecords["deleted"] = $row->nbRows;
+   } else {
+      $changedRecords["deleted"] = 0;
+   }
 
-   $query = getSelectQueryChanged($request, $minVersion, $maxVersion, "countOnly");
+   if($minVersion == 0 && $maxVersionIsDefault) {
+      $query = getSelectQuery($request, "read");
+   } else {
+      $query = getSelectQueryChanged($request, $minVersion, $maxVersion, "countOnly");
+   }
    $stmt = $db->prepare($query);
-   $stmt->execute($request["filters"]);
+   $selectExecValues = getSelectExecValues($request);
+   $stmt->execute($selectExecValues);
    $row = $stmt->fetchObject();
    $changedRecords["inserted"] = $row->nbRows;
    return $changedRecords;
