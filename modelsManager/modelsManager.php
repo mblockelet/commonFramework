@@ -140,7 +140,6 @@ function getJoinsUsed($request, $joinsMode = "read", $operation, $filtersUsed = 
    $viewModel = $request["model"];
    $joinsUsed = array();
    if ($joinsMode != "countOnly") {
-      if (!is_array($viewModel["fields"])) { error_log(print_r($request, true)); }
       foreach ($viewModel["fields"] as $fieldAlias => $field) {
          if (($joinsMode == "write") && !hasFieldAccess($viewModel, $fieldAlias, "write", $roles)) {
             continue;
@@ -528,7 +527,7 @@ function getSelectExecValues($request) {
 }
 
 function addFilterValues($viewModel, $filterName, $filterValue, $prefix, &$values, $filtersUsed = null) {
-   if ((!isset($viewModel["filters"][$filterName]) && !isset($filtersUsed[$filterName])) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
+   if ((!isset($viewModel["filters"][$filterName]) && !isset($filtersUsed[$filterName]) && (!isset($viewModel["fields"][$filterName]))) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
       return;
    }
    if (gettype($filterValue) == 'array') {
