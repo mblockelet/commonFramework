@@ -121,7 +121,7 @@ function getSelectQueryDeleted($request, $minVersion, $maxVersion, $joinsMode) {
    }
    $selectFields = "`changedIDs`.`".$ID."`";
    if ($joinsMode == "countOnly") {
-      $selectFields = "count(*) as `nbRows`";
+      $selectFields = "count(*) as `nbItems`";
    }
    $query = "SELECT ".$selectFields." FROM (".$selectIDsModified.") as `changedIDs` ".
       " LEFT JOIN (".$mainTableQuery.") AS `mainTable` ON (`changedIDs`.`".$ID."` = `mainTable`.`".$ID."`) WHERE `mainTable`.`".$ID."` IS NULL";
@@ -146,7 +146,7 @@ function getSelectQueryChanged($request, $minVersion, $maxVersion, $joinsMode) {
 
    if ($joinsMode === "countOnly") {
       $conditions[] = "`changedIDs`.`".$ID."` IS NULL";
-      $sqlFieldsSelect = "count(*) as `nbRows`";
+      $sqlFieldsSelect = "count(*) as `nbItems`";
    }
    $query = "SELECT ".$sqlFieldsSelect.
       " FROM  `".$viewModel["mainTable"]."`".
@@ -181,13 +181,13 @@ function getChangesCountSince($db, $request, $minVersion, $maxVersion, $maxVersi
       $selectExecValues = getSelectExecValues($request);
       $stmt->execute($selectExecValues);
       $row = $stmt->fetchObject();
-      $changedRecords["deleted"] = $row->nbRows;
+      $changedRecords["deleted"] = $row->nbItems;
    } else {
       $changedRecords["deleted"] = 0;
    }
 
    if($minVersion == 0 && $maxVersionIsDefault) {
-      $query = getSelectQuery($request, "read");
+      $query = getSelectQuery($request, "countOnly");
    } else {
       $query = getSelectQueryChanged($request, $minVersion, $maxVersion, "countOnly");
    }
@@ -195,7 +195,7 @@ function getChangesCountSince($db, $request, $minVersion, $maxVersion, $maxVersi
    $selectExecValues = getSelectExecValues($request);
    $stmt->execute($selectExecValues);
    $row = $stmt->fetchObject();
-   $changedRecords["inserted"] = $row->nbRows;
+   $changedRecords["inserted"] = $row->nbItems;
    return $changedRecords;
 }
 
