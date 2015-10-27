@@ -115,12 +115,15 @@ function filtersAffectedByUpdate($request, $operation) {
 }
 
 function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $operation) {
+   if ($filterName == "recordID") {
+      return true;
+   }
    if (isset($viewModel["filters"][$filterName])) {
       $filter = $viewModel["filters"][$filterName];
       if (isset($filter["readOnly"]) && $filter["readOnly"] && ($operation != "select")) {
          return false;
       }
-   } elseif (($filterName != "recordID") && (!isset($viewModel["fields"][$filterName]))) {
+   } elseif (!isset($viewModel["fields"][$filterName])) {
       error_log(json_encode($viewModel));
       throw new Exception('cannot find asked filter '.$filterName);
    }
@@ -527,7 +530,7 @@ function getSelectExecValues($request) {
 }
 
 function addFilterValues($viewModel, $filterName, $filterValue, $prefix, &$values, $filtersUsed = null) {
-   if ((!isset($viewModel["filters"][$filterName]) && !isset($filtersUsed[$filterName]) && (!isset($viewModel["fields"][$filterName]))) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
+  if ((($filterName != "recordID") && !isset($viewModel["filters"][$filterName]) && !isset($filtersUsed[$filterName]) && (!isset($viewModel["fields"][$filterName]))) || isset($viewModel["filters"][$filterName]['ignoreValue'])) {
       return;
    }
    if (gettype($filterValue) == 'array') {
