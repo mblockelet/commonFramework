@@ -9,14 +9,14 @@ var objectHasProperties = function(object) {
 };
 
 var removeFromArrayByKey = function(arrayFrom, key, itemID) {
-  var itemIndex;
+  var itemIndex = undefined;
   for (var iItem = 0; iItem < arrayFrom.length; iItem++) {
      if (arrayFrom[iItem][key] === itemID) {
         itemIndex = iItem;
         break;
      }
   }
-  if (itemIndex) {
+  if (itemIndex !== undefined) {
      arrayFrom.splice(itemIndex, 1);
   }
 };
