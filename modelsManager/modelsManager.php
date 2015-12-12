@@ -118,6 +118,10 @@ function filterIsUsed($viewModel, $filterName, $filterValue, $filtersUsed, $oper
    if ($filterName == "recordID") {
       return true;
    }
+   // This seems necessary: if $filterValue is a scalar, isset($filterValue["modes"]) returns 1;
+   if ((gettype($filterValue) != "array") && (gettype($filterValue) != "object")) {
+       $filterValue = null;
+   }
    if (isset($viewModel["filters"][$filterName])) {
       $filter = $viewModel["filters"][$filterName];
       if (isset($filter["readOnly"]) && $filter["readOnly"] && ($operation != "select")) {
