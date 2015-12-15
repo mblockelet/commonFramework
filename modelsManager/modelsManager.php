@@ -348,7 +348,7 @@ function getSelectQuery($request, $joinsMode) {
    $sqlJoins = getSqlJoins($request, $joinsMode, "select");
    $conditions = getConditions($request, "select");
    if ($joinsMode == "countOnly") {
-      $sqlFieldsSelect = "count(*) as `nbItems`";
+      $sqlFieldsSelect = "count(DISTINCT `".$viewModel["mainTable"]."`.`".$ID."`) as `nbItems`";
    } else {
       $fieldsSelect = getFieldsSelect($request);
       $sqlFieldsSelect = "`".$viewModel["mainTable"]."`.`".$ID."`, ".implode($fieldsSelect, ", ");
