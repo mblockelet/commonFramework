@@ -36,7 +36,7 @@ function createViewModelFromTable($tableName) {
 
 }
 
-function syncGetTablesRequests($tables = null) {
+function syncGetTablesRequests($tables = null, $useCount = true) {
    global $tablesModels;
    $requests = array();
    foreach ($tablesModels as $tableName => $tableModel) {
@@ -51,7 +51,8 @@ function syncGetTablesRequests($tables = null) {
          "modelName" => $tableName,
          "model" => $viewModel,
          "fields" => getViewModelFieldsList($viewModel),
-         "filters"  => array()
+         "filters"  => array(),
+         "countRows" => $useCount
       );
    }
    return $requests;
