@@ -2,8 +2,8 @@
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
 require_once("syncCommon.php");
-require_once("../shared/syncRequests.php");
-require_once("../shared/connect.php");
+require_once("../../shared/syncRequests.php");
+require_once("../../shared/connect.php");
 
 function syncWithServer($db, $serverUrl, $requests) {
    global $tablesModels, $config;
