@@ -92,7 +92,9 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          error_log('something is wrong with request '.print_r($request, true));
          continue;
       }
-      syncDebug('getChanges', 'begin', $requestName);
+      if (function_exists(syncDebug)) {
+         syncDebug('getChanges', 'begin', $requestName);
+      }
       $curMinVersion = $minVersion;
       if (isset($request["minVersion"])) {
          $curMinVersion = $request["minVersion"];
@@ -139,7 +141,9 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          error_log("Too many changes for request ".$requestName." (".$nbChanges.") ".$minVersion."-".$maxVersion);
          return null;
       }
-      syncDebug('getChanges', 'end', $requestName);
+      if (function_exists(syncDebug)) {
+         syncDebug('getChanges', 'end', $requestName);
+      }
    }
    return $allChanges;
 }
