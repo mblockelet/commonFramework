@@ -5,6 +5,13 @@ require_once __DIR__."/../modelsManager/modelsManager.php";
 require_once __DIR__."/../modelsManager/modelsManagerVersions.php";
 require_once __DIR__."/../../shared/models.php";
 
+if (file_exists( __DIR__."/../../shared/debug.php")) {
+   include_once __DIR__."/../../shared/debug.php"; // not required
+} else {
+   function syncDebug($type, $b_or_e, $subtype='') {}
+}
+
+
 function syncUpdateVersions($db, $lastServerVersion) {
    $query = "UPDATE `synchro_version` SET `iLastServerVersion` = :lastServerVersion, `iLastClientVersion` = `iVersion`";
    $stmt = $db->prepare($query);
@@ -92,9 +99,8 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          error_log('something is wrong with request '.print_r($request, true));
          continue;
       }
-      if (function_exists(syncDebug)) {
-         syncDebug('getChanges', 'begin', $requestName);
-      }
+      syncDebug('getChanges', 'begin', $requestName);
+
       $curMinVersion = $minVersion;
       if (isset($request["minVersion"])) {
          $curMinVersion = $request["minVersion"];
@@ -141,9 +147,7 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          error_log("Too many changes for request ".$requestName." (".$nbChanges.") ".$minVersion."-".$maxVersion);
          return null;
       }
-      if (function_exists(syncDebug)) {
-         syncDebug('getChanges', 'end', $requestName);
-      }
+      syncDebug('getChanges', 'end', $requestName);
    }
    return $allChanges;
 }
