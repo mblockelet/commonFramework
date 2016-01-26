@@ -291,7 +291,7 @@ function syncApplyChanges($db, $requests, $changes) {
          continue;
       }
       $request = $requests[$modelName]; // TODO : might not always be the case!!
-      if ($request['readOnly']) {
+      if (isset($request['readOnly']) && $request['readOnly']) {
          continue;
       }
       $viewModel = $request["model"];
