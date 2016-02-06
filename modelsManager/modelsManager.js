@@ -407,6 +407,7 @@ window.ModelsManager = {
       this.invokeDeletedListeners(modelName, oldRecord);
       SyncQueue.addObject(modelName, oldRecord, SyncQueue.actionDelete);
       delete this.oldData[modelName][ID];
+      delete this.curData[modelName][ID];
       // We don't delete the record, it becomes a placeholder
    },
    deleteIfNoLink: function(modelName, ID) {
