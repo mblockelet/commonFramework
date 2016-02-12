@@ -99,6 +99,9 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
          error_log('something is wrong with request '.print_r($request, true));
          continue;
       }
+      if (isset($request['writeOnly']) && $request['writeOnly']) {
+         continue;
+      }
       syncDebug('getChanges', 'begin', $requestName);
 
       $curMinVersion = $minVersion;
