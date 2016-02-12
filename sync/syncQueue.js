@@ -115,6 +115,7 @@ window.SyncQueue = {
    params: {},
    syncStartListeners: {},
    syncEndListeners: {},
+   futureSyncEndListeners: {},
    dateLastSync: null,
    dateLastSyncAttempt: null,
    nbSyncs: 0,
@@ -160,12 +161,17 @@ window.SyncQueue = {
       this.syncStartListeners[name] = listener;
    },
 
-   addSyncEndListeners: function(name, listener) {
-      this.syncEndListeners[name] = listener;
+   addSyncEndListeners: function(name, listener, safe) {
+      if (safe) {
+         this.futureSyncEndListeners[name] = listener;
+      } else {
+         this.syncEndListeners[name] = listener;
+      }
    },
 
    removeSyncEndListeners: function(name) {
       delete this.syncEndListeners[name];
+      delete this.futureSyncEndListeners[name];
    },
 
    removeSyncStartListeners: function(name) {
@@ -455,6 +461,10 @@ window.SyncQueue = {
                } catch(exception) {
                   SyncQueue.syncFailed(data, (numAttempt == SyncQueue.numLastAttempt), 1);
                   return;
+               }
+               for (var listenerName in SyncQueue.futureSyncEndListeners) {
+                  SyncQueue.syncEndListeners[listenerName] = SyncQueue.futureSyncEndListeners[listenerName];
+                  delete SyncQueue.futureSyncEndListeners[listenerName];
                }
                SyncQueue.callSyncStartListeners(data);
                SyncQueue.lastExecTime = data.execTime;
