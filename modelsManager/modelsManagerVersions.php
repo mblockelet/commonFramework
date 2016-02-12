@@ -253,9 +253,9 @@ function getChangesSince($db, $request, $minVersion, $maxVersion, $requestName, 
       }
       unset($row->_changedID);
       unset($row->_maxVersionSelected);
-      if (isset($request['debugLogFunction'])) {
-         $request['debugLogFunction'](print_r($row, true), array(), 'found');
-      }
+      // if (isset($request['debugLogFunction'])) {
+      //    $request['debugLogFunction'](print_r($row, true), array(), 'found');
+      // }
       if ($changedID == null) {
          $changedRecords["inserted"][$row->$ID] = array("data" => $row);
          $nbChanges++;
