@@ -170,12 +170,18 @@ window.SyncQueue = {
    },
 
    removeSyncEndListeners: function(name) {
-      delete this.syncEndListeners[name];
-      delete this.futureSyncEndListeners[name];
+      if (this.syncEndListeners[name]) {
+         delete this.syncEndListeners[name];
+      }
+      if (this.futureSyncEndListeners[name]) {
+         delete this.futureSyncEndListeners[name];
+      }
    },
 
    removeSyncStartListeners: function(name) {
-      delete this.syncStartListeners[name];
+      if (this.syncStartListeners[name]) {
+         delete this.syncStartListeners[name];
+      }
    },
 
    callSyncStartListeners: function(data) {
