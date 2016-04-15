@@ -405,7 +405,9 @@ window.ModelsManager = {
       }
       this.deleteIndexes(modelName, oldRecord);
       this.invokeDeletedListeners(modelName, oldRecord);
-      SyncQueue.addObject(modelName, oldRecord, SyncQueue.actionDelete);
+      if (typeof SyncQueue !== 'undefined') {
+         SyncQueue.addObject(modelName, oldRecord, SyncQueue.actionDelete);
+      }
       delete this.oldData[modelName][ID];
       delete this.curData[modelName][ID];
       // We don't delete the record, it becomes a placeholder
@@ -543,10 +545,14 @@ window.ModelsManager = {
          oldRecord[fieldName] = curRecord[fieldName];
       }
       if (inserted) {
-         SyncQueue.addObject(modelName, curRecord, SyncQueue.actionInsert, delaySync);
+         if (typeof SyncQueue !== 'undefined') {
+            SyncQueue.addObject(modelName, curRecord, SyncQueue.actionInsert, delaySync);
+         }
          this.invokeInsertedListeners(modelName, curRecord);
       } else {
-         SyncQueue.addObject(modelName, curRecord, SyncQueue.actionUpdate, delaySync);
+         if (typeof SyncQueue !== 'undefined') {
+            SyncQueue.addObject(modelName, curRecord, SyncQueue.actionUpdate, delaySync);
+         }
          this.invokeUpdatedListeners(modelName, curRecord, copyOldRecord);
       }
    },
