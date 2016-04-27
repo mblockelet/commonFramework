@@ -586,7 +586,7 @@ function callListeners($db, $type) {
 }
 
 function updateRows($db, $request, $roles) {
-   if (count($request["records"]) == 0 || (isset($request['readOnly']) && $request['readOnly'])) {
+   if (count($request["records"]) == 0) {
       return array();
    }
    if (isset($request['insertBeforeUpdate']) && $request['insertBeforeUpdate']) {
@@ -633,7 +633,7 @@ function updateRows($db, $request, $roles) {
 }
 
 function insertRows($db, $request, $roles) {
-   if (count($request["records"]) == 0 || (isset($request['readOnly']) && $request['readOnly'])) {
+   if (count($request["records"]) == 0) {
       return array();
    }
    $viewModel = $request["model"];
@@ -692,7 +692,7 @@ function insertRows($db, $request, $roles) {
 }
 
 function deleteRows($db, $request, $roles) {
-   if (count($request["records"]) == 0 || (isset($request['readOnly']) && $request['readOnly'])) {
+   if (count($request["records"]) == 0) {
       return array();
    }
    $viewModel = $request["model"];
