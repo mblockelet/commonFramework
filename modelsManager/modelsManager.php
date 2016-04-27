@@ -273,7 +273,7 @@ function getFieldsUpdate($request, $roles, $newMainTable) {
    $viewModel = $request["model"];
    $fieldsUpdate = array();
    foreach ($request["fields"] as $fieldAlias) {
-      if (isset($viewModel['fields'][$fieldAlias]) && isset($viewModel['fields'][$fieldAlias]['readOnly']) && $viewModel['fields'][$fieldAlias]['readOnly']) {
+      if (isset($viewModel['fields'][$fieldAlias]) && ((isset($viewModel['fields'][$fieldAlias]['readOnly']) && $viewModel['fields'][$fieldAlias]['readOnly']) || (isset($viewModel['fields'][$fieldAlias]['insertOnly']) && $viewModel['fields'][$fieldAlias]['insertOnly']))) {
          continue;
       }
       $tableName = getFieldTable($viewModel, $fieldAlias);
@@ -382,24 +382,27 @@ function getSelectQuery($request, $joinsMode) {
 function getUpdateQuery($request, $roles, $filtersUsedForNewValues) {
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
-   $sqlJoinsOld = getSqlJoins($request, "write", "update", "", null, $roles);
-   $conditionsOld = getConditions($request, "update", "filterOld_");
-   //error_log("filters used : ".json_encode($filtersUsedForNewValues));
-   $sqlJoinsNew = getSqlJoins($request, "countOnly", "update", "new_", $filtersUsedForNewValues, $roles);
+   $sqlJoinsNew = getSqlJoins($request, "write", "update", "new_", $filtersUsedForNewValues, $roles);
    $conditionsNew = getConditions($request, "update", "filterNew_", "new_", $filtersUsedForNewValues);
    $mainTable = $viewModel["mainTable"];
    $newMainTable = "new_".$mainTable;
-   $conditions[] = "`".$mainTable."`.`".$ID."` = :".$ID;
-   $conditions = array_merge($conditions, $conditionsOld, $conditionsNew);
+   $fieldsInsert = getFieldsInsert($request, $roles, $newMainTable);
    $fieldsUpdate = getFieldsUpdate($request, $roles, $newMainTable);
    $selectNewValues = getFieldsSelectForUpdate($request, $roles);
-   if ($selectNewValues == null) {
-      error_log("selectedNewValues is null");
-      return null;
+   if (!hasAutoincrementID($viewModel)) {
+      $selectNewValues[] = ":".$ID." as `".$ID."`";
+      $fieldsInsert[] = "`".$ID."`";
    }
-   $query = "UPDATE `".$mainTable."` ".$sqlJoinsOld.", (SELECT ".implode($selectNewValues, ", ").") as `" .$newMainTable."` ".$sqlJoinsNew." SET ".implode($fieldsUpdate, ", ")." WHERE ".implode($conditions, " AND ");
-   //error_log($query);
-   return $query;
+   if ($selectNewValues == null) {
+      $selectNewValues = array("NULL as `".$ID."`");
+      $fieldsInsert = array($ID);
+   }
+   $selectQuery = "SELECT `".$newMainTable."`.* FROM (SELECT ".implode($selectNewValues, ", ").") as `" .$newMainTable."` ".$sqlJoinsNew;
+   if (count($conditionsNew) > 0) {
+      $selectQuery .= "WHERE ".implode($conditionsNew, " AND ");
+   }
+   $insertQuery = "INSERT IGNORE INTO `".$mainTable."` (".implode($fieldsInsert, ",").") (".$selectQuery.") ON DUPLICATE KEY UPDATE ".implode($fieldsUpdate, ",").";";
+   return $insertQuery;
 }
 
 function getDeleteQuery($request, $roles) {
@@ -614,7 +617,6 @@ function updateRows($db, $request, $roles) {
          if (!filterIsUsed($viewModel, $filterName, $filterValue, null, "update")) {
             continue;
          }
-         addFilterValues($viewModel, $filterName, $filterValue, 'filterOld_', $values, null);
          if (isset($filtersUsedForNewValues[$filterName])) {
             addFilterValues($viewModel, $filterName, $filterValue, 'filterNew_', $values, null);
          }
