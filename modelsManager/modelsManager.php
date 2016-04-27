@@ -273,7 +273,7 @@ function getFieldsUpdate($request, $roles, $newMainTable) {
    $viewModel = $request["model"];
    $fieldsUpdate = array();
    foreach ($request["fields"] as $fieldAlias) {
-      if (isset($viewModel['fields'][$fieldAlias]) && isset($viewModel['fields'][$fieldAlias]['readOnly']) && $viewModel['fields'][$fieldAlias]['readOnly']) {
+      if (isset($viewModel['fields'][$fieldAlias]) && ((isset($viewModel['fields'][$fieldAlias]['readOnly']) && $viewModel['fields'][$fieldAlias]['readOnly']) || (isset($viewModel['fields'][$fieldAlias]['insertOnly']) && $viewModel['fields'][$fieldAlias]['insertOnly']))) {
          continue;
       }
       $tableName = getFieldTable($viewModel, $fieldAlias);
@@ -587,7 +587,10 @@ function callListeners($db, $type) {
 
 function updateRows($db, $request, $roles) {
    if (count($request["records"]) == 0) {
-      return;
+      return array();
+   }
+   if (isset($request['insertBeforeUpdate']) && $request['insertBeforeUpdate']) {
+      insertRows($db, $request, $roles);
    }
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
@@ -689,6 +692,9 @@ function insertRows($db, $request, $roles) {
 }
 
 function deleteRows($db, $request, $roles) {
+   if (count($request["records"]) == 0) {
+      return array();
+   }
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
    $query = getDeleteQuery($request, $roles);
