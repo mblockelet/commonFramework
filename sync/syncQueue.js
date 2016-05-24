@@ -128,6 +128,7 @@ window.SyncQueue = {
    nbExceptions: 0,
    numLastAttempt: 0,
    hasSyncedFully: false,
+   debugMode: false,
 
    actionInsert: 1,
    actionUpdate: 2,
@@ -380,6 +381,7 @@ window.SyncQueue = {
    },
 
    sync: function(callback) {
+      var self = this;
       if ((SyncQueue.status == SyncQueue.statusSending) || (SyncQueue.status == SyncQueue.statusSendingWillSend)) {
          SyncQueue.syncCheckActive();
          if (SyncQueue.status != SyncQueue.statusIdle) {
@@ -394,7 +396,9 @@ window.SyncQueue = {
       }
       SyncQueue.numLastAttempt++;
       var numAttempt = SyncQueue.numLastAttempt;
-      console.log("sync");// + getFrenchTime());
+      if (this.debugMode) {
+         console.log("sync");// + getFrenchTime());
+      }
       SyncQueue.markStatus(SyncQueue.statusSending);
       SyncQueue.setStatus(SyncQueue.statusSending);
       var sentChanges = {};
@@ -432,14 +436,16 @@ window.SyncQueue = {
          }
       }
       SyncQueue.initRequestsVersions();
-      console.log("Changes sent : " + JSON.stringify(sentChanges));
-      console.log("requests : " + JSON.stringify(SyncQueue.requests));
-      console.log("requestSets : " + JSON.stringify(SyncQueue.requestSets));
+      if (this.debugMode) {
+         console.log("Changes sent : " + JSON.stringify(sentChanges));
+         console.log("requests : " + JSON.stringify(SyncQueue.requests));
+         console.log("requestSets : " + JSON.stringify(SyncQueue.requestSets));
+         console.log("minServerVersion : " + SyncQueue.serverVersion);
+      }
       var params = { requests: SyncQueue.requests };
       for (var paramName in SyncQueue.params) {
          params[paramName] = SyncQueue.params[paramName];
       }
-      console.log("minServerVersion : " + SyncQueue.serverVersion);
       SyncQueue.dateLastSyncAttempt = ModelsManager.now();
       SyncQueue.lastExecTime = "";
       $.ajax({
@@ -463,7 +469,9 @@ window.SyncQueue = {
                }
                try {
                   data = $.parseJSON(data);
-                  console.log(data);
+                  if (self.debugMode) {
+                     console.log(data);
+                  }
                } catch(exception) {
                   SyncQueue.syncFailed(data, (numAttempt == SyncQueue.numLastAttempt), 1);
                   return;
@@ -483,8 +491,10 @@ window.SyncQueue = {
                if ((SyncQueue.status === SyncQueue.statusSendingWillSend) || data.continued) {
                   setTimeout(SyncQueue.sync, 1000);
                   SyncQueue.setStatus(SyncQueue.statusWillSend);
-                  console.log("back to willSend");
-               } else {
+                  if (self.debugMode) {
+                     console.log("back to willSend");
+                  }
+               } else if (self.debugMode) {
                   console.log("back to idle");
                   SyncQueue.setStatus(SyncQueue.statusIdle);
                }
