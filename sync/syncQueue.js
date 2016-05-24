@@ -381,7 +381,6 @@ window.SyncQueue = {
    },
 
    sync: function(callback) {
-      var self = this;
       if ((SyncQueue.status == SyncQueue.statusSending) || (SyncQueue.status == SyncQueue.statusSendingWillSend)) {
          SyncQueue.syncCheckActive();
          if (SyncQueue.status != SyncQueue.statusIdle) {
@@ -396,7 +395,7 @@ window.SyncQueue = {
       }
       SyncQueue.numLastAttempt++;
       var numAttempt = SyncQueue.numLastAttempt;
-      if (this.debugMode) {
+      if (SyncQueue.debugMode) {
          console.log("sync");// + getFrenchTime());
       }
       SyncQueue.markStatus(SyncQueue.statusSending);
@@ -436,7 +435,7 @@ window.SyncQueue = {
          }
       }
       SyncQueue.initRequestsVersions();
-      if (this.debugMode) {
+      if (SyncQueue.debugMode) {
          console.log("Changes sent : " + JSON.stringify(sentChanges));
          console.log("requests : " + JSON.stringify(SyncQueue.requests));
          console.log("requestSets : " + JSON.stringify(SyncQueue.requestSets));
@@ -469,7 +468,7 @@ window.SyncQueue = {
                }
                try {
                   data = $.parseJSON(data);
-                  if (self.debugMode) {
+                  if (SyncQueue.debugMode) {
                      console.log(data);
                   }
                } catch(exception) {
@@ -491,11 +490,13 @@ window.SyncQueue = {
                if ((SyncQueue.status === SyncQueue.statusSendingWillSend) || data.continued) {
                   setTimeout(SyncQueue.sync, 1000);
                   SyncQueue.setStatus(SyncQueue.statusWillSend);
-                  if (self.debugMode) {
+                  if (SyncQueue.debugMode) {
                      console.log("back to willSend");
                   }
-               } else if (self.debugMode) {
-                  console.log("back to idle");
+               } else {
+                  if (SyncQueue.debugMode) {
+                     console.log("back to idle");
+                  }
                   SyncQueue.setStatus(SyncQueue.statusIdle);
                }
                ModelsManager.sortAllMarked();
