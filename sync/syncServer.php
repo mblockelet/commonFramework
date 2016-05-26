@@ -177,7 +177,10 @@ if (isset($_POST["requestSets"])) {
       $setName = $requestSet["name"];
       require_once __DIR__."/../../syncRequests/".$setName.".php";
       $newRequests = $setName::getSyncRequests($requestSet);
-      $newRequest['requestSet'] = $setName;
+      if (!$newRequests) {
+         error_log('requestSet '.$setName.' did not give any request!');
+         continue;
+      }
       $requests = array_merge($requests, $newRequests);
    }
 }
