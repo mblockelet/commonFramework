@@ -88,6 +88,7 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    }
    syncDebug('syncApplyChangesSafe', 'begin');
    syncApplyChangesSafe($db, $requests, $clientChanges, $roles);
+   syncApplyChangesSafe($db, $requests, $clientChanges, $roles, true);
    syncDebug('syncApplyChangesSafe', 'end');
 
    // We increment the version again now that all changes have been applied.

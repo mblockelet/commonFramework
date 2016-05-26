@@ -247,18 +247,20 @@ function syncGetRecordsIds($request, $rows) {
    return $records;
 }
 
-function syncApplyChangesSafe($db, $requests, $changes, $roles) {
+function syncApplyChangesSafe($db, $requests, $changes, $roles, $lowPriority=false) {
    foreach ($changes as $modelName => $requestChanges) {
       $modelName = strtolower($modelName);
+      if (!isset($requests[$modelName])) {
+         error_log('syncApplyChangesSafe: no request for model '.$modelName);
+         continue;
+      }
+      if (($requests[$modelName]['lowPriority'] && !$lowPriority) || ($lowPriority && (!isset($requests[$modelName]['lowPriority']) || !$requests[$modelName]['lowPriority']))) {
+         continue;
+      }
       if (is_string($requestChanges)) {
          $requestChanges = json_decode($requestChanges, true);
       }
       $requestChanges = (array)$requestChanges;
-      if (!isset($requests[$modelName])) {
-         error_log('syncApplyChangesSafe: no request for model '.$modelName);
-         file_put_contents('/tmp/requests.txt', json_encode($requests));
-         continue;
-      }
       $request = $requests[$modelName]; // TODO : might not always be the case!!
       set_time_limit(0);
       if (isset($requestChanges["inserted"])) {
