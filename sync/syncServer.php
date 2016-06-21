@@ -147,7 +147,11 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    echo  "}";
 }
 
-//error_log(json_encode($_POST));
+if (isset($_GET['json']) && $_GET['json'] == '1') {
+   $_POST = json_decode(file_get_contents('php://input'), true);
+   $_REQUEST = $_POST;
+}
+
 $clientChanges = array();
 if (isset($_POST["changes"])) {
    if (is_string($_POST["changes"])) {
