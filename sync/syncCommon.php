@@ -254,7 +254,8 @@ function syncApplyChangesSafe($db, $requests, $changes, $roles, $lowPriority=fal
          error_log('syncApplyChangesSafe: no request for model '.$modelName);
          continue;
       }
-      if (($requests[$modelName]['lowPriority'] && !$lowPriority) || ($lowPriority && (!isset($requests[$modelName]['lowPriority']) || !$requests[$modelName]['lowPriority']))) {
+      if ((isset($requests[$modelName]['lowPriority']) && $requests[$modelName]['lowPriority'] && !$lowPriority) ||
+		  ($lowPriority && (!isset($requests[$modelName]['lowPriority']) || !$requests[$modelName]['lowPriority']))) {
          continue;
       }
       if (is_string($requestChanges)) {
