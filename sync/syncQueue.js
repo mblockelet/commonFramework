@@ -330,7 +330,7 @@ window.SyncQueue = {
       for (var requestName in SyncQueue.requests) {
          var request = SyncQueue.requests[requestName];
          for (var instanceID in request) {
-            if (typeof request[instanceID] === 'object') {
+            if (request[instanceID] && typeof request[instanceID] === 'object') {
                if (request[instanceID].resetMinVersion) {
                   request[instanceID].minVersion = 0;
                   delete request[instanceID].resetMinVersion;

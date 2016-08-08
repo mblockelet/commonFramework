@@ -35,7 +35,6 @@ function createViewModelFromTable($tableName) {
    $tableModel = getTableModel($tableName);
    if (isset($viewsModels) && isset($viewsModels[$tableName])) {
       $viewModel = $viewsModels[$tableName];
-      $viewModel["fields"] = $tableModel["fields"];
    } else {
       $viewModel = array("mainTable" => $tableName, "joins" => array(), "fields" => $tableModel["fields"], "filters" => array());
    }
@@ -99,7 +98,7 @@ function syncGetChanges($db, $requests, $minVersion, $maxVersion, $maxChanges, $
    $nbChanges = 0;
    foreach ($requests as $requestName => $request) {
       if (!$request || !is_array($request)) {
-         error_log('something is wrong with request '.print_r($request, true));
+         error_log('something is wrong with request '.json_encode($request, true));
          continue;
       }
       if (isset($request['writeOnly']) && $request['writeOnly']) {
@@ -251,9 +250,17 @@ function syncGetRecordsIds($request, $rows) {
    return $records;
 }
 
-function syncApplyChangesSafe($db, $requests, $changes, $roles) {
+function syncApplyChangesSafe($db, $requests, $changes, $roles, $lowPriority=false) {
    foreach ($changes as $modelName => $requestChanges) {
       $modelName = strtolower($modelName);
+      if (!isset($requests[$modelName])) {
+         error_log('syncApplyChangesSafe: no request for model '.$modelName);
+         continue;
+      }
+      if ((isset($requests[$modelName]['lowPriority']) && $requests[$modelName]['lowPriority'] && !$lowPriority) ||
+		  ($lowPriority && (!isset($requests[$modelName]['lowPriority']) || !$requests[$modelName]['lowPriority']))) {
+         continue;
+      }
       if (is_string($requestChanges)) {
          $requestChanges = json_decode($requestChanges, true);
       }
@@ -298,6 +305,10 @@ function syncApplyChanges($db, $requests, $changes) {
          $requestChanges = json_decode($requestChanges, true);
       }
       if ($modelName === "config") {
+         continue;
+      }
+      if (!isset($requests[$modelName])) {
+         error_log('trying to apply a change in '.$modelName.', but no associated request!');
          continue;
       }
       $request = $requests[$modelName]; // TODO : might not always be the case!!

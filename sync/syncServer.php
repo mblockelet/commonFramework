@@ -88,6 +88,7 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    }
    syncDebug('syncApplyChangesSafe', 'begin');
    syncApplyChangesSafe($db, $requests, $clientChanges, $roles);
+   syncApplyChangesSafe($db, $requests, $clientChanges, $roles, true);
    syncDebug('syncApplyChangesSafe', 'end');
 
    // We increment the version again now that all changes have been applied.
@@ -146,7 +147,11 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    echo  "}";
 }
 
-//error_log(json_encode($_POST));
+if (isset($_GET['json']) && $_GET['json'] == '1') {
+   $_POST = json_decode(file_get_contents('php://input'), true);
+   $_REQUEST = $_POST;
+}
+
 $clientChanges = array();
 if (isset($_POST["changes"])) {
    if (is_string($_POST["changes"])) {
@@ -177,7 +182,10 @@ if (isset($_POST["requestSets"])) {
       $setName = $requestSet["name"];
       require_once __DIR__."/../../syncRequests/".$setName.".php";
       $newRequests = $setName::getSyncRequests($requestSet);
-      $newRequest['requestSet'] = $setName;
+      if (!$newRequests) {
+         error_log('requestSet '.$setName.' did not give any request!');
+         continue;
+      }
       $requests = array_merge($requests, $newRequests);
    }
 }
