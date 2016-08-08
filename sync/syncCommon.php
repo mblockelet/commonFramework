@@ -54,6 +54,9 @@ function syncGetTablesRequests($tables = null, $useCount = true) {
          continue;
       }
       $viewModel = createViewModelFromTable($tableName);
+      if (!$viewModel) {
+         error_log('cannot create view model from table '.$tableName);
+      }
       $requests[$tableName] = array(
          "modelName" => $tableName,
          "model" => $viewModel,
@@ -256,6 +259,10 @@ function syncApplyChangesSafe($db, $requests, $changes, $roles) {
       }
       $requestChanges = (array)$requestChanges;
       $request = $requests[$modelName]; // TODO : might not always be the case!!
+      if (!$request) {
+         error_log('cannot find proper request for modelName '.$modelName);
+         continue;
+      }
       set_time_limit(0);
       if (isset($requestChanges["inserted"])) {
          $request["records"] = syncGetRecords($request, $requestChanges["inserted"]);
@@ -294,6 +301,10 @@ function syncApplyChanges($db, $requests, $changes) {
          continue;
       }
       $request = $requests[$modelName]; // TODO : might not always be the case!!
+      if (!$request) {
+         error_log('cannot find proper request for modelName '.$modelName);
+         return;
+      }
       if (isset($request['readOnly']) && $request['readOnly']) {
          continue;
       }
