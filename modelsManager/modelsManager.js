@@ -263,6 +263,8 @@ window.ModelsManager = {
             curRecord[linkName] = {};
          } else if (link.type == "array") {
             curRecord[linkName] = [];
+         } else if (link.type == "direct") {
+            curRecord[linkName] = null;
          }
       }
       if (debug) {
@@ -299,6 +301,7 @@ window.ModelsManager = {
       var refModel = this.models[field.refModel];
       var link = refModel.links[field.invLink];
       var primaryKey = this.getPrimaryKey(link.refModel);
+      var refRecord;
       if ((link.type == "object") || (link.type == "object_list")) {
          var index = primaryKey;
          if (link.index != undefined) {
@@ -312,10 +315,16 @@ window.ModelsManager = {
       }
       if (link.type == "array") {
          if (oldValue != null) {
-            var refRecord = this.curData[field.refModel][oldValue];
+            refRecord = this.curData[field.refModel][oldValue];
             if (refRecord != undefined) {
                removeFromArrayByKey(refRecord[field.invLink], primaryKey, oldRecord[primaryKey]);
             }
+         }
+      }
+      if (link.type == 'direct') {
+         refRecord = this.curData[field.refModel][oldValue];
+         if (refRecord) {
+            refRecord[field.invLink] = null;
          }
       }
       if (oldValue != null) {
@@ -381,6 +390,15 @@ window.ModelsManager = {
             this.markToSort(field.refModel, curValue, field.invLink, orderBy);
          }
       }
+      if (link.type == 'direct') {
+         if ((curValue != null) && (curValue != "0")) {
+            if (this.curData[field.refModel][curValue] == undefined) {
+               this.createRecordPlaceholder(field.refModel, curValue);
+            }
+            refRecord = this.curData[field.refModel][curValue];
+            refRecord[field.invLink] = curRecord;
+         }
+      }
    },
    deleted: function(modelName, ID) {
       var model = this.models[modelName];
@@ -430,6 +448,8 @@ window.ModelsManager = {
                if (objectHasProperties(linkData)) {
                   return;
                }
+            } else if (link.type == 'object' && linkData) {
+               return;
             }
          }
       }
@@ -490,13 +510,11 @@ window.ModelsManager = {
          if (field.refModel != undefined) {
             refModel = this.models[field.refModel];
             if (field.invLink != undefined) {
-               var invLinkIndex = this.models[field.refModel].links[field.invLink].index;
-               if (invLinkIndex != undefined) {
-                  if (curRecord[invLinkIndex] != oldRecord[invLinkIndex]) {
-                     forceRecompute = true;
-                     // the value of the key may not have changed, but the value for the field that serves as an index
-                     // in the refRecord has changed, so we need to recompute
-                  }
+               var invLink = this.models[field.refModel].links[field.invLink];
+               if ((invLink.index && curRecord[invLink.index] != oldRecord[invLink.index]) || invLink.type == 'direct') {
+                  forceRecompute = true;
+                  // the value of the key may not have changed, but the value for the field that serves as an index
+                  // in the refRecord has changed, so we need to recompute
                }
             }
          }
