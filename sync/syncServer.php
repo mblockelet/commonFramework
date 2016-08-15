@@ -181,7 +181,7 @@ if (isset($_POST["requestSets"])) {
    foreach($requestSets as $requestSet) {
       $setName = $requestSet["name"];
       require_once __DIR__."/../../syncRequests/".$setName.".php";
-      $newRequests = $setName::getSyncRequests($requestSet);
+      $newRequests = $setName::getSyncRequests($requestSet, $minServerVersion);
       if (!$newRequests) {
          error_log('requestSet '.$setName.' did not give any request!');
          continue;
