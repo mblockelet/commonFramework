@@ -57,8 +57,13 @@
          <span ng-switch-when="jsdatetime">
             <label class="control-label col-xs-4">{{ field.label }} : </label>
             <div class="col-xs-3">
-              <input type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="model[fieldname]"/>
+              <p class="input-group">
+                <input type="text" class="form-control" uib-datepicker-popup="shortDate" ng-model="model[fieldname]" is-open="popup1Opened"/>
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="popup1Opened = true;"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
               <!--style="width:120px;position:relative"-->
+              </p>
             </div>
             <div class="col-xs-3">
               <timepicker ng-model="model[fieldname]"></timepicker>
@@ -78,8 +83,13 @@
          <span ng-switch-when="jsdate">
             <label class="control-label col-xs-4">{{ field.label }}</label>
             <div class="col-xs-5">
-              <input type="text" class="form-control" datepicker-popup="dd/MM/yyyy" ng-model="model[fieldname]"/>
+              <p class="input-group">
+                <input type="text" class="form-control" uib-datepicker-popup="shortDate" ng-model="model[fieldname]" is-open="popup1Opened"/>
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="popup1Opened = true;"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
               <!--style="width:120px;position:relative"-->
+              </p>
             </div>
             <div class="col-xs-3">
               <button class="btn btn-danger" ng-click="clear()">Jamais</button>
