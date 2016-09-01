@@ -115,7 +115,7 @@ window.SyncQueue = {
    params: {},
    syncStartListeners: {},
    syncEndListeners: {},
-   futureSyncEndListeners: {},
+   laterSyncEndListeners: {},
    dateLastSync: null,
    dateLastSyncAttempt: null,
    nbSyncs: 0,
@@ -164,18 +164,21 @@ window.SyncQueue = {
 
    addSyncEndListeners: function(name, listener, safe) {
       if (safe) {
-         this.futureSyncEndListeners[name] = listener;
-      } else {
-         this.syncEndListeners[name] = listener;
+         SyncQueue.syncCheckActive();
+         if (SyncQueue.status != SyncQueue.statusIdle) {
+            this.laterSyncEndListeners[name] = listener;
+            return;
+         }
       }
+      this.syncEndListeners[name] = listener;
    },
 
    removeSyncEndListeners: function(name) {
       if (this.syncEndListeners[name]) {
          delete this.syncEndListeners[name];
       }
-      if (this.futureSyncEndListeners[name]) {
-         delete this.futureSyncEndListeners[name];
+      if (this.laterSyncEndListeners[name]) {
+         delete this.laterSyncEndListeners[name];
       }
    },
 
@@ -309,13 +312,9 @@ window.SyncQueue = {
       if (delay == undefined) {
          delay = 1000;
       }
-      if (delay == 0) {
+      setTimeout(function() {
          SyncQueue.sync(callback);
-      } else {
-         setTimeout(function() {
-            SyncQueue.sync(callback);
-         }, delay);
-      }
+      }, delay);
    },
 
    updateRequestsVersions: function() {
@@ -370,7 +369,7 @@ window.SyncQueue = {
       if (SyncQueue.nbFailures == 2) {
          SyncQueue.showAlert("Attention : l'application ne parvient pas à se connecter. Vos dernières modifications risquent de ne pas être enregistrées. Surveillez l'indicateur de connexion.");
       }
-      console.log("Echec " + SyncQueue.nbFailures + " : " + message);
+      console.error("Echec " + SyncQueue.nbFailures + " : " + message);
       if (retry) {
          SyncQueue.markStatus(SyncQueue.statusWillSend); // TODO: update
          SyncQueue.setStatus(SyncQueue.statusWillSend);
@@ -475,10 +474,6 @@ window.SyncQueue = {
                   SyncQueue.syncFailed(data, (numAttempt == SyncQueue.numLastAttempt), 1);
                   return;
                }
-               for (var listenerName in SyncQueue.futureSyncEndListeners) {
-                  SyncQueue.syncEndListeners[listenerName] = SyncQueue.futureSyncEndListeners[listenerName];
-                  delete SyncQueue.futureSyncEndListeners[listenerName];
-               }
                SyncQueue.callSyncStartListeners(data);
                SyncQueue.lastExecTime = data.execTime;
 
@@ -502,6 +497,10 @@ window.SyncQueue = {
                ModelsManager.sortAllMarked();
                ModelsManager.invokeAllSafeListeners();
                SyncQueue.callSyncEndListeners(data);
+               for (var listenerName in SyncQueue.laterSyncEndListeners) {
+                  SyncQueue.syncEndListeners[listenerName] = SyncQueue.laterSyncEndListeners[listenerName];
+                  delete SyncQueue.laterSyncEndListeners[listenerName];
+               }
                SyncQueue.serverVersion = SyncQueue.resetSync ? 0 : data.serverVersion;
                if (!data.continued) {
                   SyncQueue.hasSyncedFully = true;
