@@ -14,8 +14,8 @@ class TriggerManager {
          $listFieldsOldValues = array('OLD.`'.$idField.'`');
          $conditions = 'OLD.`'.$idField.'` = NEW.`'.$idField.'`';
          $listFields[] = "`iVersion`";
-         $listFieldsNewValues[] = "@curVersion";
-         $listFieldsOldValues[] = "@curVersion";
+         $listFieldsNewValues[] = "CURRENT_TIMESTAMP";
+         $listFieldsOldValues[] = "CURRENT_TIMESTAMP";
          foreach ($tableModel["fields"] as $fieldName => $field) {
             $listFields[] = "`".$fieldName."`";
             if (! isset($field['skipHistory']) ||  ! $field['skipHistory']) {
@@ -24,31 +24,19 @@ class TriggerManager {
             $listFieldsNewValues[] = "NEW.`".$fieldName."`";
             $listFieldsOldValues[] = "OLD.`".$fieldName."`";
          }
-         $triggers[$tableName]["BEFORE INSERT"][] = "SELECT `iVersion` INTO @curVersion FROM `synchro_version`;".
-                                                  "SET NEW.iVersion = @curVersion";
 
          $triggers[$tableName]["AFTER INSERT"][] = "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") VALUES (".implode(",", $listFieldsNewValues).")";
 
          $triggers[$tableName]["BEFORE UPDATE"][] =
-            "IF NEW.iVersion <> OLD.iVersion THEN ".
-               "SET @curVersion = NEW.iVersion; ".
-            "ELSE ".
-               "SELECT `iVersion` INTO @curVersion FROM `synchro_version`; ".
-               "IF @curVersion = OLD.iVersion THEN ".
-                  "UPDATE `synchro_version` SET `iVersion` = `iVersion` + 1; ".
-                  "SET @curVersion = @curVersion + 1; ".
-               "END IF; ".
-            "END IF; ".
             "IF NOT (".$conditions.") THEN ".
-            "  SET NEW.iVersion = @curVersion; ".
-            "  UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `ID` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
+            "  SET NEW.iVersion = CURRENT_TIMESTAMP; ".
+            "  UPDATE `history_".$tableName."` SET `iNextVersion` = CURRENT_TIMESTAMP WHERE `ID` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
             "  INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") ".
             "      VALUES (".implode(",", $listFieldsNewValues).") ".
             "; END IF";
 
          $triggers[$tableName]["BEFORE DELETE"][] =
-                  "SELECT `iVersion` INTO @curVersion FROM `synchro_version`; ".
-                  "UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
+                  "UPDATE `history_".$tableName."` SET `iNextVersion` = CURRENT_TIMESTAMP WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
                   "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).", `bDeleted`) ".
                      "VALUES (".implode(",", $listFieldsOldValues).", 1)";
       }

@@ -5,6 +5,8 @@ require_once("modelsTools.inc.php");
 
 // get joins
 function getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, $aliasPrefix = "", $lastVersion = null, $changedJoinName = "") {
+   global $db;
+   $lastVersionQ = $db->quote($lastVersion);
    $sqlJoins = "";
    foreach ($viewModel["joins"] as $joinName => $join) {
       if (!isset($joinsUsed[$joinName])) {
@@ -18,8 +20,8 @@ function getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, $aliasPrefix = 
          if ($joinName != $changedJoinName) {
             $allowNoChangeCondition = " OR (`".$aliasPrefix.$joinName."`.`iNextVersion` IS NULL AND NOT `".$aliasPrefix.$joinName."`.`bDeleted` <=> 1)";
          }
-         $lastVersionCondition = "AND `".$aliasPrefix.$joinName."`.`iVersion` < ".$lastVersion.
-         " AND (`".$aliasPrefix.$joinName."`.`iNextVersion` >= ".$lastVersion." ".$allowNoChangeCondition.")";
+         $lastVersionCondition = "AND `".$aliasPrefix.$joinName."`.`iVersion` < ".$lastVersionQ.
+         " AND (`".$aliasPrefix.$joinName."`.`iNextVersion` >= ".$lastVersionQ." ".$allowNoChangeCondition.")";
       }
       if (isset($join['on'])) {
          $joinOn = str_replace("[PREFIX]", $aliasPrefix, $join["on"]);
@@ -42,6 +44,9 @@ A record for the request has changed since minVersion if and only if either the 
 one of the records of the joined table referenced by the current record has changed since minVersion.
 */
 function getIDsModifiedSince($request, $minVersion, $maxVersion) {
+   global $db;
+   $minVersionQ = $db->quote($minVersion);
+   $maxVersionQ = $db->quote($maxVersion);
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
    $joinsUsed = getJoinsUsed($request, "read", "select");
@@ -53,14 +58,14 @@ function getIDsModifiedSince($request, $minVersion, $maxVersion) {
       }
       $sqlJoins = getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, "history_", $minVersion, $joinName);
       $joinConditions = $conditions;
-      $joinConditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersion." AND (`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion." OR ".
+      $joinConditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersionQ." AND (`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersionQ." OR ".
          "(`history_".$viewModel["mainTable"]."`.`iNextVersion` IS NULL AND NOT `history_".$viewModel["mainTable"]."`.`bDeleted` <=> 1))";
       $queries[] = "SELECT `history_".$viewModel["mainTable"]."`.`".$ID."` ".
          "FROM `history_".$viewModel["mainTable"]."` ".$sqlJoins." ".
          "WHERE ".implode($joinConditions, " AND ");
    }
    $sqlJoins = getSqlJoinsFromUsedWithVersions($viewModel, $joinsUsed, "history_", $minVersion, "");
-   $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersion." AND (`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersion.")";
+   $conditions[] = "`history_".$viewModel["mainTable"]."`.`iVersion` < ".$minVersionQ." AND (`history_".$viewModel["mainTable"]."`.`iNextVersion` >= ".$minVersionQ.")";
    $queries[] = "SELECT `history_".$viewModel["mainTable"]."`.`".$ID."` FROM `"."history_".$viewModel["mainTable"]."` ".$sqlJoins." WHERE ".implode($conditions, " AND ");
    return "SELECT DISTINCT `".$ID."` FROM (".implode($queries, " UNION ").") AS `mainTable`";
 }
@@ -135,6 +140,9 @@ function getSelectQueryDeleted($request, $minVersion, $maxVersion, $joinsMode) {
    Otherwise, they are updated records if maxVersionSelected >= $minVersion
 */
 function getSelectQueryChanged($request, $minVersion, $maxVersion, $joinsMode) {
+   global $db;
+   $minVersionQ = $db->quote($minVersion);
+   $maxVersionQ = $db->quote($maxVersion);
    $viewModel = $request["model"];
    $ID = getPrimaryKey($viewModel);
    $selectIDsModified = getIDsModifiedSince($request, $minVersion, $maxVersion);
@@ -152,8 +160,8 @@ function getSelectQueryChanged($request, $minVersion, $maxVersion, $joinsMode) {
       " FROM  `".$viewModel["mainTable"]."`".
       $sqlJoins.
       " LEFT JOIN (".$selectIDsModified.") as `changedIDs` ON (`".$viewModel["mainTable"]."`.`".$ID."` = `changedIDs`.`".$ID."`) ";
-   $conditions[] = getMaxVersionAllJoins($request)." >= ".$minVersion;
-   $conditions[] = getMaxVersionAllJoins($request)." < ".$maxVersion;
+   $conditions[] = getMaxVersionAllJoins($request)." >= ".$minVersionQ;
+   $conditions[] = getMaxVersionAllJoins($request)." < ".$maxVersionQ;
    $query .= " WHERE ".implode($conditions, " AND ");
    if ($joinsMode != "countOnly") {
       $query .= getGroupBy($request);

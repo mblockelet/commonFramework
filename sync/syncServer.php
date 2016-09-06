@@ -76,10 +76,6 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    if ($useTransaction) {
       $db->exec("SET autocommit=0"); // as shown at the bottom of http://dev.mysql.com/doc/refman/5.0/en/lock-tables-and-transactions.html
    }
-   // We increment the version before we apply changes so that all the changes caused by a this synchronization
-   // are given a version number that is unique to this synchronization
-   // (note that not all changes come from synchronizations, so the version is not always incremented after a change)
-   syncIncrementVersion($db);
 
    if (function_exists("syncAddCustomClientChanges")) {
       syncDebug('syncAddCustomClientChanges', 'begin');
@@ -91,25 +87,21 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    syncApplyChangesSafe($db, $requests, $clientChanges, $roles, true);
    syncDebug('syncApplyChangesSafe', 'end');
 
-   // We increment the version again now that all changes have been applied.
-   // Anything that changes after this will have to be sent in future synchronizations with this client
-   // If a transaction is used, this also ensures that the changes from this synchronization are marked with a unique version number.
-   syncIncrementVersion($db);
-
    // Applying changes before detecting changes mans that the changes coming from a client will be re-sent to it.
    // This is necessary because some of the changes may affect other records, that enter or leave the scope during the same version.
    // Listeners and triggers may also generate new changes that need to be sent to the client.
    
    // We save the current version, which will be used as the next minVersion when the same client synchronizes in the future. 
-   $curVersions = syncGetVersions($db);
+   $curVersion = syncGetVersion($db);
 
    $bsearchTimes = array();
-   $maxVersion = $curVersions->iVersion;
+   $maxVersion = $curVersion->iVersion;
+   $maxVersionTT = $curVersion->iVersionTT;
    $continued = false;
    $prevTime = microtime(true);
    while (true) {
       syncDebug('syncGetChanges', 'begin');
-      $serverChanges = syncGetChanges($db, $requests, $minServerVersion, $maxVersion, $config->sync->maxChanges, $maxVersion == $curVersions->iVersion);
+      $serverChanges = syncGetChanges($db, $requests, $minServerVersion, $maxVersion, $config->sync->maxChanges, $maxVersion == $curVersion->iVersion);
       syncDebug('syncGetChanges', 'end');
       $bsearchTimes[] = (microtime(true) - $prevTime) * 1000;
       $prevTime = microtime(true);
@@ -118,10 +110,12 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
       }
       // If there are more than $config->sync->maxChanges changes, we reduce the window of versions to send fewer changes
       // This way, we reduce the risk of memory or timeout issues preventing the synchronization from working properly
-      $continued = true;
-      $maxVersion = max($minServerVersion + 1, floor(($minServerVersion + $maxVersion) / 2));
+      break;
+      // not really easy to test for me, untested with the new timestamp system (remove above "break;" to test)
+      //$continued = true;
+      //$maxVersionTT = max($minServerVersion + 1, floor(($minServerVersion + $maxVersionTT) / 2));
    }
-   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion, $maxVersion == $curVersions->iVersion);
+   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion, $maxVersion == $curVersion->iVersion);
    if (function_exists("syncAddCustomServerChanges")) {
       syncDebug('syncAddCustomServerChanges', 'begin');
       syncAddCustomServerChanges($db, $minServerVersion, $serverChanges, $serverCounts, $params);

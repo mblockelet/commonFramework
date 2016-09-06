@@ -5,10 +5,11 @@
 require_once __DIR__."/../../shared/connect.php";
 require_once __DIR__."/../../shared/models.php";
 
-echo "To clean all history tables completely, run the following queries :<br/>";
+echo "Cleaning all history tables:<br/>";
 foreach ($tablesModels as $tableName => $tableModel) {
    $query = "truncate history_$tableName;";
    echo $query."<br/>";
+   $db->exec($query);
 }
 
 echo "<br/>Regenerating minimal history :<br/>";
@@ -18,7 +19,7 @@ foreach ($tablesModels as $tableName => $tableModel) {
    $fieldsStrWithPrefix = "`".$tableName."`.`".implode("`, `".$tableName."`.`", $fields)."`";
 
    $query = "INSERT INTO `history_".$tableName."` (`ID`, ".$fieldsStr.", `bDeleted`, `iVersion`, `iNextVersion`) ".
-      "(SELECT `".$tableName."`.`ID`, ".$fieldsStrWithPrefix.", 0 as `bDeleted`, 1 as `iVersion`, NULL as `iNextVersion` ".
+      "(SELECT `".$tableName."`.`ID`, ".$fieldsStrWithPrefix.", 0 as `bDeleted`, CURRENT_TIMESTAMP as `iVersion`, NULL as `iNextVersion` ".
        "FROM `".$tableName."` ".
        "LEFT JOIN `history_".$tableName."` ON (`history_".$tableName."`.`ID` = `".$tableName."`.`ID` AND `history_".$tableName."`.`bDeleted` IS NULL AND `history_".$tableName."`.`iNextVersion` IS NULL)".
        "WHERE `history_".$tableName."`.`ID` IS NULL)";

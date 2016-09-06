@@ -11,22 +11,24 @@ if (file_exists( __DIR__."/../../shared/debug.php")) {
    function syncDebug($type, $b_or_e, $subtype='') {}
 }
 
-
-function syncUpdateVersions($db, $lastServerVersion) {
-   $query = "UPDATE `synchro_version` SET `iLastServerVersion` = :lastServerVersion, `iLastClientVersion` = `iVersion`";
-   $stmt = $db->prepare($query);
-   $stmt->execute(array("lastServerVersion" => $lastServerVersion));
-}
-
-function syncGetVersions($db) {
-   $query = "SELECT * FROM `synchro_version`";
+function syncGetVersion($db) {
+   $query = "SELECT unix_timestamp(CURRENT_TIMESTAMP) as iVersionTT, CURRENT_TIMESTAMP as iVersion;";
    $stmt = $db->query($query);
    return $stmt->fetchObject();
 }
 
-function syncIncrementVersion($db) {
-   $query = "UPDATE `synchro_version` SET `iVersion` = `iVersion` + 1";
-   $db->exec($query);
+function unixToVersion($db, $unix) {
+   $query = "SELECT FROM_UNIX(:unix);";
+   $stmt = $db->prepare($query);
+   $stmt->execute(['unix' => $unix]);
+   return $stmt->fetchColumn();
+}
+
+function versionToUnix($db, $version) {
+   $query = "SELECT unix_timestamp(:version);";
+   $stmt = $db->prepare($query);
+   $stmt->execute(['version' => $version]);
+   return intval($stmt->fetchColumn());
 }
 
 function createViewModelFromTable($tableName) {
