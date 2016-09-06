@@ -1,10 +1,10 @@
 <?php
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
-require_once("../../shared/connect.php");
-require_once("../sync/syncCommon.php");
-require_once("versionedRequestsManager.php");
-require_once("modelsTools.inc.php");
+require_once(__DIR__."/../../shared/connect.php");
+require_once(__DIR__."/../sync/syncCommon.php");
+require_once(__DIR__."/versionedRequestsManager.php");
+require_once(__DIR__."/modelsTools.inc.php");
 
 class RequestConverter {
    private $request;
@@ -134,7 +134,7 @@ class RequestConverter {
          $tablesAliasesToAdd = array();
          foreach ($tableInfos["model"]["joins"] as $joinName => $join) {
             $srcField = $join["srcField"];
-            if (isset($fieldsUsedByTableAlias[$tableAlias]) && isset($fieldsUsedByTableAlias[$tableAlias][$srcField]) {
+            if (isset($fieldsUsedByTableAlias[$tableAlias]) && isset($fieldsUsedByTableAlias[$tableAlias][$srcField])) {
                if (!$curTableAdded) {
                   $tablesAliasesToAdd[] = $tableAlias;
                   $curTableAdded = true;

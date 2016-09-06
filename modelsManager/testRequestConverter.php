@@ -1,8 +1,8 @@
 <?php
 
-require_once("../shared/connect.php");
-require_once("requestConverter.php");
-require_once("testModels.php");
+require_once(__DIR__."/../../shared/connect.php");
+require_once(__DIR__."/requestConverter.php");
+require_once(__DIR__."/testModels.php");
 
 $requestSyncMain = array(
    "tablesModels" => $tablesModels,

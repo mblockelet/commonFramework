@@ -1,6 +1,6 @@
 <?php
 
-require_once("../shared/connect.php");
+require_once(__DIR__."/../../shared/connect.php");
 require_once("testModels.php");
 require_once("triggersManager.inc.php");
 require_once("versionedRequestsManager.php");
@@ -15,7 +15,7 @@ function createTableAndHistory($tableName, $fields) {
    foreach($fields as $name => $type) {
       $query .= "`".$name."` ".$type.",";
    }
-   $query .= "`iVersion` int(11) NOT NULL,".
+   $query .= "`iVersion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,".
              "PRIMARY KEY (`ID`),".
              "KEY `iVersion` (`iVersion`)".
              ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
@@ -27,8 +27,8 @@ function createTableAndHistory($tableName, $fields) {
    foreach($fields as $name => $type) {
       $query .= "`".$name."` ".$type.",";
    }
-   $query .= "`iVersion` int(11) NOT NULL,".
-             "`iNextVersion` int(11) NULL, ".
+   $query .= "`iVersion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,".
+             "`iNextVersion` TIMESTAMP NULL DEFAULT NULL, ".
              "`bDeleted` tinyint(11) NOT NULL, ".
              "PRIMARY KEY (`historyID`),".
              "KEY `ID` (`ID`),".

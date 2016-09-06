@@ -1,8 +1,8 @@
 <?php
 /* Copyright (c) 2013 Apycat / Association France-ioi, MIT License http://opensource.org/licenses/MIT */
 
-require_once("../shared/connect.php");
-require_once("modelsTools.inc.php");
+require_once(__DIR__."/../../shared/connect.php");
+require_once(__DIR__."/modelsTools.inc.php");
 
 class VersionedRequestsManager {
    public static $debug = false;
@@ -92,6 +92,8 @@ class VersionedRequestsManager {
       that were part of the request just before $minVersion.
    */
    static function getQueryListChangedRecords($request, $minVersion, $changedDstTable) {
+      global $db;
+      $minVersion = $db->quote($minVersion);
       $hasLeftJoins = false;
       $sqlJoins = "";
       foreach ($request["joins"] as $aliasDstTable => $join) {
@@ -315,12 +317,6 @@ class VersionedRequestsManager {
          return null;
       }
       return $changedRecords;
-   }
-
-   public static function incrementVersion() {
-      global $db;
-      $query = "UPDATE `synchro_version` SET `iVersion` = `iVersion` + 1";
-      $db->exec($query);
    }
 
    public static function getVersions() {
