@@ -95,13 +95,12 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    $curVersion = syncGetVersion($db);
 
    $bsearchTimes = array();
-   $maxVersion = $curVersion->iVersion;
-   $maxVersionTT = $curVersion->iVersionTT;
+   $maxVersion = $curVersion;
    $continued = false;
    $prevTime = microtime(true);
    while (true) {
       syncDebug('syncGetChanges', 'begin');
-      $serverChanges = syncGetChanges($db, $requests, $minServerVersion, $maxVersion, $config->sync->maxChanges, $maxVersion == $curVersion->iVersion);
+      $serverChanges = syncGetChanges($db, $requests, $minServerVersion, $maxVersion, $config->sync->maxChanges, $maxVersion == $curVersion);
       syncDebug('syncGetChanges', 'end');
       $bsearchTimes[] = (microtime(true) - $prevTime) * 1000;
       $prevTime = microtime(true);
@@ -110,12 +109,10 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
       }
       // If there are more than $config->sync->maxChanges changes, we reduce the window of versions to send fewer changes
       // This way, we reduce the risk of memory or timeout issues preventing the synchronization from working properly
-      break;
-      // not really easy to test for me, untested with the new timestamp system (remove above "break;" to test)
-      //$continued = true;
-      //$maxVersionTT = max($minServerVersion + 1, floor(($minServerVersion + $maxVersionTT) / 2));
+      $continued = true;
+      $maxVersion = max($minServerVersion + 1, floor(($minServerVersion + $maxVersion) / 2));
    }
-   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion, $maxVersion == $curVersion->iVersion);
+   $serverCounts = syncGetCounts($db, $requests, $minServerVersion, $maxVersion, $maxVersion == $curVersion);
    if (function_exists("syncAddCustomServerChanges")) {
       syncDebug('syncAddCustomServerChanges', 'begin');
       syncAddCustomServerChanges($db, $minServerVersion, $serverChanges, $serverCounts, $params);

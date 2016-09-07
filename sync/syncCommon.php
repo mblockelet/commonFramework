@@ -12,23 +12,9 @@ if (file_exists( __DIR__."/../../shared/debug.php")) {
 }
 
 function syncGetVersion($db) {
-   $query = "SELECT unix_timestamp(CURRENT_TIMESTAMP) as iVersionTT, CURRENT_TIMESTAMP as iVersion;";
+   $query = "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10);";
    $stmt = $db->query($query);
-   return $stmt->fetchObject();
-}
-
-function unixToVersion($db, $unix) {
-   $query = "SELECT FROM_UNIX(:unix);";
-   $stmt = $db->prepare($query);
-   $stmt->execute(['unix' => $unix]);
    return $stmt->fetchColumn();
-}
-
-function versionToUnix($db, $version) {
-   $query = "SELECT unix_timestamp(:version);";
-   $stmt = $db->prepare($query);
-   $stmt->execute(['version' => $version]);
-   return intval($stmt->fetchColumn());
 }
 
 function createViewModelFromTable($tableName) {

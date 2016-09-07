@@ -7,17 +7,16 @@ foreach ($tablesModels as $tableName => $tableModel) {
 	if (isset($tableModel['hasHistory']) && !$tableModel['hasHistory']) {
 		continue;
 	}
-	$stmt = $db->prepare('ALTER TABLE `'.$tableName.'` CHANGE `iVersion` `iVersion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;');
+	$stmt = $db->prepare('ALTER TABLE `'.$tableName.'` CHANGE `iVersion` `iVersion` BIGINT(20) NOT NULL;');
 	$stmt->execute();
-	$stmt = $db->prepare('UPDATE `'.$tableName.'` SET `iVersion` = CURRENT_TIMESTAMP;');
+	$stmt = $db->prepare('SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; UPDATE `'.$tableName.'` SET `iVersion` = @curVersion;');
 	$stmt->execute();
-	$query = "truncate history_$tableName;";
-    echo $query."\n";
-    $db->exec($query);
+	$stmt = $db->prepare("truncate history_$tableName;");
+    $stmt->execute();
 	// see http://stackoverflow.com/a/31865524/2560906 we need to make a default
-	$stmt = $db->prepare('ALTER TABLE `history_'.$tableName.'` CHANGE `iVersion` `iVersion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;');
+	$stmt = $db->prepare('ALTER TABLE `history_'.$tableName.'` CHANGE `iVersion` `iVersion` BIGINT(20) NOT NULL;');
 	$stmt->execute();
-	$stmt = $db->prepare('ALTER TABLE `history_'.$tableName.'` CHANGE `iNextVersion` `iNextVersion` TIMESTAMP NULL DEFAULT NULL;');
+	$stmt = $db->prepare('ALTER TABLE `history_'.$tableName.'` CHANGE `iNextVersion` `iNextVersion` BIGINT(20) NULL DEFAULT NULL;');
 	$stmt->execute();
 	$fields = array_keys($tableModel['fields']);
 	$fieldsStr = "`".implode('`, `', $fields)."`";
@@ -27,8 +26,8 @@ foreach ($tablesModels as $tableName => $tableModel) {
 	    "FROM `".$tableName."` ".
 	    "LEFT JOIN `history_".$tableName."` ON (`history_".$tableName."`.`ID` = `".$tableName."`.`ID` AND `history_".$tableName."`.`bDeleted` IS NULL AND `history_".$tableName."`.`iNextVersion` IS NULL)".
 	    "WHERE `history_".$tableName."`.`ID` IS NULL)";
-    echo $tableName;
-    $db->exec($query);
+    $stmt = $db->prepare($query);
+    $stmt->execute();
     echo " ok\n";
 }
 

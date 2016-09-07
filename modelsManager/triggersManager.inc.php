@@ -14,8 +14,8 @@ class TriggerManager {
          $listFieldsOldValues = array('OLD.`'.$idField.'`');
          $conditions = 'OLD.`'.$idField.'` = NEW.`'.$idField.'`';
          $listFields[] = "`iVersion`";
-         $listFieldsNewValues[] = "CURRENT_TIMESTAMP";
-         $listFieldsOldValues[] = "CURRENT_TIMESTAMP";
+         $listFieldsNewValues[] = "@curVersion";
+         $listFieldsOldValues[] = "@curVersion";
          foreach ($tableModel["fields"] as $fieldName => $field) {
             $listFields[] = "`".$fieldName."`";
             if (! isset($field['skipHistory']) ||  ! $field['skipHistory']) {
@@ -25,18 +25,27 @@ class TriggerManager {
             $listFieldsOldValues[] = "OLD.`".$fieldName."`";
          }
 
+         $triggers[$tableName]["BEFORE INSERT"][] = "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion;".
+                                                  "SET NEW.iVersion = @curVersion";
+
          $triggers[$tableName]["AFTER INSERT"][] = "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") VALUES (".implode(",", $listFieldsNewValues).")";
 
          $triggers[$tableName]["BEFORE UPDATE"][] =
+            "IF NEW.iVersion <> OLD.iVersion THEN ".
+               "SET @curVersion = NEW.iVersion; ".
+            "ELSE ".
+               "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; ".
+            "END IF; ".
             "IF NOT (".$conditions.") THEN ".
-            "  SET NEW.iVersion = CURRENT_TIMESTAMP; ".
-            "  UPDATE `history_".$tableName."` SET `iNextVersion` = CURRENT_TIMESTAMP WHERE `ID` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
+            "  SET NEW.iVersion = @curVersion; ".
+            "  UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `ID` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
             "  INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") ".
             "      VALUES (".implode(",", $listFieldsNewValues).") ".
             "; END IF";
 
          $triggers[$tableName]["BEFORE DELETE"][] =
-                  "UPDATE `history_".$tableName."` SET `iNextVersion` = CURRENT_TIMESTAMP WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
+                  "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; ".
+                  "UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
                   "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).", `bDeleted`) ".
                      "VALUES (".implode(",", $listFieldsOldValues).", 1)";
       }
