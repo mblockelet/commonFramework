@@ -478,7 +478,7 @@ window.ModelsManager = {
          }
       }
    },
-   inserted: function(modelName, ID) {
+   inserted: function(modelName, ID, delaySync) {
       var reallyInserted = false;
       if (this.oldData[modelName][ID] == undefined) {
          reallyInserted = true;
@@ -489,7 +489,7 @@ window.ModelsManager = {
          this.setupRecordLinks(modelName, ID);
       }
       this.curData[modelName][ID].reallyInserted = true;
-      this.updated(modelName, ID, reallyInserted);
+      this.updated(modelName, ID, reallyInserted, delaySync);
    },
    updated: function(modelName, ID, inserted, delaySync) {
       var model = this.models[modelName];
@@ -635,11 +635,11 @@ window.ModelsManager = {
          }
       }
    },
-   insertRecord: function(modelName, record) {
+   insertRecord: function(modelName, record, delaySync) {
       var primaryKey = this.getPrimaryKey(modelName);
       var ID = record[primaryKey];
       this.curData[modelName][ID] = record;
-      this.inserted(modelName, ID);
+      this.inserted(modelName, ID, delaySync);
    },
    insertFromRowOfStrings: function(modelName, row, requestSetName) {
       var primaryKey = this.getPrimaryKey(modelName);
