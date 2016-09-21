@@ -563,12 +563,12 @@ window.ModelsManager = {
          oldRecord[fieldName] = curRecord[fieldName];
       }
       if (inserted) {
-         if (typeof SyncQueue !== 'undefined') {
+         if (typeof SyncQueue !== 'undefined' && delaySync != 'noSync') {
             SyncQueue.addObject(modelName, curRecord, SyncQueue.actionInsert, delaySync);
          }
          this.invokeInsertedListeners(modelName, curRecord);
       } else {
-         if (typeof SyncQueue !== 'undefined') {
+         if (typeof SyncQueue !== 'undefined' && delaySync != 'noSync') {
             SyncQueue.addObject(modelName, curRecord, SyncQueue.actionUpdate, delaySync);
          }
          this.invokeUpdatedListeners(modelName, curRecord, copyOldRecord);
