@@ -9,7 +9,6 @@ class TriggerManager {
             continue;
          }
          $idField = isset($tableModel["primaryKey"]) ? $tableModel["primaryKey"] : 'ID';
-         $getCurrentVersion = 'UNIX_TIMESTAMP(NOW())';
          $listFields = array('`'.$idField.'`');
          $listFieldsNewValues = array('NEW.`'.$idField.'`');
          $listFieldsOldValues = array('OLD.`'.$idField.'`');
@@ -26,7 +25,7 @@ class TriggerManager {
             $listFieldsOldValues[] = "OLD.`".$fieldName."`";
          }
 
-         $triggers[$tableName]["BEFORE INSERT"][] = "SELECT ".$getCurrentVersion." INTO @curVersion;".
+         $triggers[$tableName]["BEFORE INSERT"][] = "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion;".
                                                   "SET NEW.iVersion = @curVersion";
 
          $triggers[$tableName]["AFTER INSERT"][] = "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).") VALUES (".implode(",", $listFieldsNewValues).")";
@@ -35,7 +34,7 @@ class TriggerManager {
             "IF NEW.iVersion <> OLD.iVersion THEN ".
                "SET @curVersion = NEW.iVersion; ".
             "ELSE ".
-               "SELECT ".$getCurrentVersion." INTO @curVersion; ".
+               "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; ".
             "END IF; ".
             "IF NOT (".$conditions.") THEN ".
             "  SET NEW.iVersion = @curVersion; ".
@@ -45,7 +44,7 @@ class TriggerManager {
             "; END IF";
 
          $triggers[$tableName]["BEFORE DELETE"][] =
-                  "SELECT ".$getCurrentVersion." INTO @curVersion; ".
+                  "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; ".
                   "UPDATE `history_".$tableName."` SET `iNextVersion` = @curVersion WHERE `".$idField."` = OLD.`".$idField."` AND `iNextVersion` IS NULL; ".
                   "INSERT INTO `history_".$tableName."` (".implode(",", $listFields).", `bDeleted`) ".
                      "VALUES (".implode(",", $listFieldsOldValues).", 1)";

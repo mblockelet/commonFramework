@@ -12,7 +12,7 @@ if (file_exists( __DIR__."/../../shared/debug.php")) {
 }
 
 function syncGetVersion($db) {
-   $query = "SELECT UNIX_TIMESTAMP(NOW());";
+   $query = "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10);";
    $stmt = $db->query($query);
    return $stmt->fetchColumn();
 }

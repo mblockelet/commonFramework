@@ -7,10 +7,9 @@ foreach ($tablesModels as $tableName => $tableModel) {
 	if (isset($tableModel['hasHistory']) && !$tableModel['hasHistory']) {
 		continue;
 	}
-	$getCurrentVersion = 'UNIX_TIMESTAMP(NOW())';
-	$stmt = $db->prepare('ALTER TABLE `'.$tableName.'` CHANGE `iVersion` `iVersion` INT(11) NOT NULL;');
+	$stmt = $db->prepare('ALTER TABLE `'.$tableName.'` CHANGE `iVersion` `iVersion` BIGINT(20) NOT NULL;');
 	$stmt->execute();
-	$stmt = $db->prepare('SELECT '.$getCurrentVersion.' INTO @curVersion; UPDATE `'.$tableName.'` SET `iVersion` = @curVersion;');
+	$stmt = $db->prepare('SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10) INTO @curVersion; UPDATE `'.$tableName.'` SET `iVersion` = @curVersion;');
 	$stmt->execute();
 	$stmt = $db->prepare("truncate history_$tableName;");
     $stmt->execute();
@@ -23,7 +22,7 @@ foreach ($tablesModels as $tableName => $tableModel) {
 	$fieldsStr = "`".implode('`, `', $fields)."`";
 	$fieldsStrWithPrefix = "`".$tableName."`.`".implode("`, `".$tableName."`.`", $fields)."`";
 	$query = "INSERT INTO `history_".$tableName."` (`ID`, ".$fieldsStr.", `bDeleted`, `iVersion`, `iNextVersion`) ".
-	   "(SELECT `".$tableName."`.`ID`, ".$fieldsStrWithPrefix.", 0 as `bDeleted`, `".$tableName."`.`iVersion` as `iVersion`, NULL as `iNextVersion` ".
+	   "(SELECT `".$tableName."`.`ID`, ".$fieldsStrWithPrefix.", 0 as `bDeleted`, CURRENT_TIMESTAMP as `iVersion`, NULL as `iNextVersion` ".
 	    "FROM `".$tableName."` ".
 	    "LEFT JOIN `history_".$tableName."` ON (`history_".$tableName."`.`ID` = `".$tableName."`.`ID` AND `history_".$tableName."`.`bDeleted` IS NULL AND `history_".$tableName."`.`iNextVersion` IS NULL)".
 	    "WHERE `history_".$tableName."`.`ID` IS NULL)";
