@@ -8,9 +8,13 @@ var TreeView = Class.extend({
       this.currentKey = 0;
       this.name = name;
       this.staticData = (typeof params.staticData === 'undefined') ? false : params.staticData;
+      this.clickFolderMode = (typeof params.clickFolderMode === 'undefined') ? 1 : params.clickFolderMode;
+      this.selectMode = (typeof params.selectMode === 'undefined') ? 1 : params.selectMode;
       this.readOnly = (typeof params.readOnly === 'undefined') ? false : params.readOnly;
       this.displayUnused = (typeof params.displayUnused === 'undefined') ? true : params.displayUnused;
       this.checkUserRight = (typeof params.checkUserRight === 'undefined') ? function(){return true;} : params.checkUserRight;
+      this.onQuerySelect = (typeof params.onQuerySelect === 'undefined') ? null : params.onQuerySelect;
+      this.onQueryActivate = (typeof params.onQueryActivate === 'undefined') ? null : params.onQueryActivate;
       this.objectsModelName = params.objectsModelName;
       this.objectsStringsModelName = params.objectsStringsModelName;
       this.objectFieldName = params.objectFieldName;
@@ -640,7 +644,10 @@ var TreeView = Class.extend({
       }
       var that = this;
       $("#" + this.name).dynatree({
-         clickFolderMode: 1, // 1:activate, 2:expand, 3:activate and expand
+         clickFolderMode: that.clickFolderMode, // 1:activate, 2:expand, 3:activate and expand
+         selectMode: that.selectMode,
+         onQueryActivate: that.onQueryActivate,
+         onQuerySelect: that.onQuerySelect,
          onActivate: function(node) {
             that.selectNode(node);
          },
