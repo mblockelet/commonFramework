@@ -8,7 +8,7 @@ require_once __DIR__."/../../shared/connect.php";
 require_once __DIR__."/../../shared/syncRequests.php";
 
 syncDebug('Synchro', 'begin');
-session_start();
+if (session_status() === PHP_SESSION_NONE){session_start();}
 
 function clientSentIdenticalRecord($recordID, & $serverRecord, & $modelClientChanges) {
    if (isset($modelClientChanges["inserted"][$recordID])) {
