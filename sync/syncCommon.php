@@ -241,8 +241,11 @@ function syncGetRecordsIds($request, $rows) {
 function syncApplyChangesSafe($db, $requests, $changes, $roles, $lowPriority=false) {
    foreach ($changes as $modelName => $requestChanges) {
       $modelName = strtolower($modelName);
-      if (!isset($requests[$modelName])) {
+      if (!isset($requests[$modelName]) || !$requests[$modelName]) {
          error_log('syncApplyChangesSafe: no request for model '.$modelName);
+         continue;
+      }
+      if (isset($requests[$modelName]['readOnly']) && $requests[$modelName]['readOnly']) {
          continue;
       }
       if ((isset($requests[$modelName]['lowPriority']) && $requests[$modelName]['lowPriority'] && !$lowPriority) ||
