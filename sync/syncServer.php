@@ -128,13 +128,13 @@ function syncWithClient($db, $clientChanges, $minServerVersion, $requests, $role
    }
    $execTime = (microtime(true) - $startTime) * 1000;
    echo "{";
-   echo  "\"changes\":".json_encode($serverChanges).",";
-   echo  "\"counts\":".json_encode($serverCounts).",";
-   echo  "\"serverVersion\":".json_encode($maxVersion).",";
-   echo  "\"execTime\":".json_encode($execTime).",";
-   echo  "\"bsearchTimes\":".json_encode($bsearchTimes).",";
-   echo  "\"continued\":".json_encode($continued).",";
-   echo  "\"serverDateTime\":".json_encode(date('Y-m-d H:i:s'));
+   echo  "\"changes\":".json_encode_safe($serverChanges).",";
+   echo  "\"counts\":".json_encode_safe($serverCounts).",";
+   echo  "\"serverVersion\":".json_encode_safe($maxVersion).",";
+   echo  "\"execTime\":".json_encode_safe($execTime).",";
+   echo  "\"bsearchTimes\":".json_encode_safe($bsearchTimes).",";
+   echo  "\"continued\":".json_encode_safe($continued).",";
+   echo  "\"serverDateTime\":".json_encode_safe(date('Y-m-d H:i:s'));
    echo  "}";
 }
 

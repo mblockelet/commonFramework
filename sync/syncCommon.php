@@ -11,6 +11,46 @@ if (file_exists( __DIR__."/../../shared/debug.php")) {
    function syncDebug($type, $b_or_e, $subtype='') {}
 }
 
+if(!function_exists('array_utf8')) {
+    function array_utf8($data) {
+        // Can't use array_walk_recursive when there are objects in the array
+        if (is_array($data) || is_object($data)) {
+            $newdata = array();
+            foreach((array) $data as $key => $val) {
+                $newdata[$key] = array_utf8($val);
+            }
+            return $newdata;
+        } elseif (is_string($data)) {
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        } else {
+            return $data;
+        }
+    }
+}
+
+if(!function_exists('json_encode_safe')) {
+    function json_encode_safe($data) {
+        // If json_encode doesn't work, try again removing all invalid UTF-8
+        // characters
+        $result = '';
+
+        try {
+            $result = json_encode($data);
+        } catch (Exception $e) {}
+
+        if ($result == '') {
+            $result = json_encode(array_utf8($data));
+        }
+        return $result;
+    }
+}
+
+function syncUpdateVersions($db, $lastServerVersion) {
+   $query = "UPDATE `synchro_version` SET `iLastServerVersion` = :lastServerVersion, `iLastClientVersion` = `iVersion`";
+   $stmt = $db->prepare($query);
+   $stmt->execute(array("lastServerVersion" => $lastServerVersion));
+}
+
 function syncGetVersion($db) {
    $query = "SELECT ROUND(UNIX_TIMESTAMP(CURTIME(2)) * 10);";
    $stmt = $db->query($query);
@@ -155,7 +195,7 @@ function httpPost($serverUrl, $data) {
        ),
    );
    $context  = stream_context_create($options);
-   echo json_encode($data);
+   echo json_encode_safe($data);
    return file_get_contents($serverUrl, false, $context);
 }
 
